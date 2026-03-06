@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inholland POC Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink:        #E6007E;
+      --pink-dark:   #B5005F;
+      --pink-light:  #FF4DA6;
+      --navy:        #1B2A4A;
+      --bg:          #F4F5F7;
+      --white:       #FFFFFF;
+      --text:        #1B2A4A;
+      --muted:       #6B7280;
+      --border:      #E5E7EB;
+      --shadow:      0 2px 10px rgba(0,0,0,0.07);
+      --shadow-hover:0 10px 28px rgba(230,0,126,0.18);
+      --radius:      12px;
+    }
+    *  { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* ─── LOGIN ──────────────────────────────────────────── */
+    #login-screen {
+      position:fixed; inset:0; z-index:999;
+      display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg, #1B2A4A 0%, #3d0d29 50%, #E6007E 100%);
+      transition: opacity .5s ease;
+    }
+    #login-screen.out { opacity:0; pointer-events:none; }
+
+    .login-card {
+      background:var(--white); border-radius:24px;
+      padding:48px 40px; width:100%; max-width:420px;
+      box-shadow:0 40px 80px rgba(0,0,0,0.25);
+      text-align:center;
+      animation: rise .55s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes rise { from{transform:translateY(32px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    .login-logo {
+      width:72px; height:72px; border-radius:18px;
+      background:var(--pink); margin:0 auto 20px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:26px; font-weight:800; color:#fff; letter-spacing:-1px;
+    }
+    .login-card h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+    .login-card > p { font-size:14px; color:var(--muted); margin-bottom:28px; }
+
+    .input-wrap { position:relative; margin-bottom:14px; }
+    .input-wrap input {
+      width:100%; padding:13px 46px 13px 16px;
+      border:2px solid var(--border); border-radius:var(--radius);
+      font-size:15px; font-family:inherit; outline:none;
+      transition:border-color .2s;
+    }
+    .input-wrap input:focus  { border-color:var(--pink); }
+    .input-wrap input.shake  { animation:shake .35s ease; border-color:#EF4444; background:#FFF5F5; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+    .eye-btn {
+      position:absolute; right:14px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; color:var(--muted); font-size:15px;
+    }
+    .btn-login {
+      width:100%; padding:14px; background:var(--pink); color:#fff;
+      border:none; border-radius:var(--radius); font-size:15px;
+      font-weight:600; font-family:inherit; cursor:pointer;
+      transition:background .2s, transform .1s; margin-top:4px;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn-login:hover  { background:var(--pink-dark); }
+    .btn-login:active { transform:scale(.98); }
+
+    .err-msg { color:#EF4444; font-size:13px; margin-top:10px; min-height:18px; }
+
+    /* ─── APP ────────────────────────────────────────────── */
+    #app { display:none; animation:fadeIn .45s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    /* HEADER */
+    header {
+      background:var(--white); border-bottom:1px solid var(--border);
+      height:62px; padding:0 32px;
+      display:flex; align-items:center; gap:20px;
+      position:sticky; top:0; z-index:100;
+      box-shadow:var(--shadow);
+    }
+    .h-brand { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+    .h-logo  {
+      width:40px; height:40px; background:var(--pink); border-radius:10px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:800; color:#fff; letter-spacing:-0.5px;
+    }
+    .h-title { font-size:17px; font-weight:700; color:var(--text); }
+    .h-sep   { width:1px; height:28px; background:var(--border); }
+
+    .search-box { flex:1; max-width:460px; position:relative; }
+    .search-box i { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:13px; pointer-events:none; }
+    .search-box input {
+      width:100%; padding:9px 16px 9px 38px;
+      border:1.5px solid var(--border); border-radius:50px;
+      font-size:14px; font-family:inherit; outline:none;
+      background:var(--bg); transition:border-color .2s, background .2s;
+    }
+    .search-box input:focus { border-color:var(--pink); background:#fff; }
+
+    .h-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
+    .pill-count {
+      background:var(--pink); color:#fff;
+      font-size:12px; font-weight:600;
+      padding:3px 10px; border-radius:50px;
+    }
+    .avatar {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg, var(--pink), #7B2D8B);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:14px; font-weight:700; cursor:pointer;
+    }
+
+    /* TABS */
+    .tabs {
+      background:var(--white); border-bottom:1px solid var(--border);
+      padding:0 32px; display:flex; gap:2px; overflow-x:auto;
+    }
+    .tab {
+      padding:14px 16px; font-size:14px; font-weight:500; color:var(--muted);
+      cursor:pointer; border-bottom:2px solid transparent;
+      transition:color .2s, border-color .2s; white-space:nowrap;
+      user-select:none;
+    }
+    .tab:hover { color:var(--pink); }
+    .tab.active { color:var(--pink); border-bottom-color:var(--pink); font-weight:600; }
+    .tc {
+      font-size:11px; font-weight:600; color:var(--pink);
+      background:rgba(230,0,126,.1); padding:1px 7px; border-radius:50px; margin-left:5px;
+    }
+
+    /* MAIN */
+    main { max-width:1360px; margin:0 auto; padding:32px; }
+    .sec-hdr { margin-bottom:24px; }
+    .sec-title { font-size:20px; font-weight:700; }
+    .sec-sub   { font-size:14px; color:var(--muted); margin-top:3px; }
+
+    /* GRID */
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+      gap:20px;
+    }
+
+    /* CARD */
+    .card {
+      background:var(--white); border-radius:18px;
+      overflow:hidden; box-shadow:var(--shadow);
+      transition:transform .25s ease, box-shadow .25s ease;
+      cursor:pointer;
+    }
+    .card:hover { transform:translateY(-5px); box-shadow:var(--shadow-hover); }
+    .card.hidden { display:none; }
+
+    .card-top {
+      height:108px; display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .card-top .blob {
+      position:absolute; inset:-20px; opacity:.18;
+      background:inherit; filter:blur(24px); transform:scale(1.1);
+    }
+    .c-icon {
+      width:62px; height:62px; border-radius:16px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:26px; color:#fff; position:relative; z-index:1;
+      box-shadow:0 8px 22px rgba(0,0,0,.22);
+    }
+
+    .card-body { padding:20px; }
+    .c-name { font-size:16px; font-weight:700; margin-bottom:5px; }
+    .c-desc { font-size:13px; color:var(--muted); line-height:1.55; margin-bottom:14px; min-height:42px; }
+
+    .tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:16px; }
+    .tag {
+      font-size:11px; font-weight:500; padding:3px 9px;
+      border-radius:50px; background:#F3F4F6; color:var(--muted);
+    }
+    .tag.live   { background:#D1FAE5; color:#065F46; }
+    .tag.azure  { background:#DBEAFE; color:#1E40AF; }
+
+    .c-actions { display:flex; gap:8px; }
+    .c-actions .btn {
+      flex:1; padding:9px 12px; border-radius:9px;
+      font-size:13px; font-weight:600; font-family:inherit;
+      cursor:pointer; border:none; display:flex; align-items:center;
+      justify-content:center; gap:6px; transition:all .2s;
+    }
+    .btn-p { background:var(--pink); color:#fff; }
+    .btn-p:hover { background:var(--pink-dark); }
+    .btn-s { background:#F3F4F6; color:var(--text); border:1.5px solid var(--border)!important; }
+    .btn-s:hover { background:rgba(230,0,126,.06); border-color:var(--pink)!important; color:var(--pink); }
+
+    /* NO RESULTS */
+    .no-results { text-align:center; padding:64px; color:var(--muted); display:none; }
+    .no-results i { font-size:44px; opacity:.3; display:block; margin-bottom:14px; }
+
+    /* ─── MODAL ──────────────────────────────────────────── */
+    .overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      z-index:500; display:flex; align-items:center; justify-content:center; padding:20px;
+      opacity:0; pointer-events:none; transition:opacity .25s;
+    }
+    .overlay.open { opacity:1; pointer-events:all; }
+
+    .modal {
+      background:#fff; border-radius:22px; padding:32px;
+      width:100%; max-width:530px; max-height:88vh; overflow-y:auto;
+      transform:scale(.94) translateY(12px); transition:transform .25s;
+      box-shadow:0 32px 72px rgba(0,0,0,.22);
+    }
+    .overlay.open .modal { transform:scale(1) translateY(0); }
+
+    .m-hdr {
+      display:flex; align-items:center; gap:14px; margin-bottom:22px;
+    }
+    .m-icon {
+      width:50px; height:50px; border-radius:14px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:21px; color:#fff;
+    }
+    .m-title { font-size:19px; font-weight:700; }
+    .m-sub   { font-size:13px; color:var(--muted); margin-top:2px; }
+    .m-close {
+      margin-left:auto; width:32px; height:32px; background:#F3F4F6;
+      border:none; border-radius:9px; cursor:pointer; font-size:15px;
+      color:var(--muted); display:flex; align-items:center; justify-content:center;
+    }
+    .m-close:hover { background:#E5E7EB; color:var(--text); }
+
+    .m-section { margin-bottom:18px; }
+    .m-section h4 {
+      font-size:11px; font-weight:600; text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted); margin-bottom:9px;
+    }
+    .m-section p { font-size:14px; color:var(--muted); line-height:1.65; }
+
+    .m-row {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 13px; background:var(--bg);
+      border-radius:10px; margin-bottom:5px;
+    }
+    .m-row i   { width:18px; text-align:center; color:var(--pink); font-size:13px; flex-shrink:0; }
+    .m-row .lbl { font-size:12px; color:var(--muted); min-width:62px; flex-shrink:0; }
+    .m-row .val {
+      font-size:12.5px; font-weight:500; color:var(--text);
+      font-family:'Courier New',monospace; flex:1; word-break:break-all;
+    }
+    .copy-btn {
+      padding:4px 9px; background:#fff; border:1.5px solid var(--border);
+      border-radius:6px; font-size:11px; font-weight:600;
+      cursor:pointer; color:var(--muted); transition:all .15s; flex-shrink:0;
+    }
+    .copy-btn:hover { border-color:var(--pink); color:var(--pink); }
+
+    .divider { height:1px; background:var(--border); margin:16px 0; }
+
+    .m-open {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:13px; background:var(--pink); color:#fff;
+      border:none; border-radius:11px; font-size:14px; font-weight:600;
+      font-family:inherit; cursor:pointer; text-decoration:none;
+      transition:background .2s; margin-top:6px;
+    }
+    .m-open:hover { background:var(--pink-dark); }
+
+    /* FOOTER */
+    footer {
+      text-align:center; padding:24px; color:var(--muted); font-size:13px;
+      border-top:1px solid var(--border); margin-top:12px;
+    }
+    footer b { color:var(--pink); }
+
+    /* RESPONSIVE */
+    @media(max-width:640px){
+      header,main,.tabs { padding-left:16px; padding-right:16px; }
+      .grid { grid-template-columns:1fr; }
+      .login-card { padding:36px 24px; }
+    }
+
+    /* CARD STAGGER */
+    .card:nth-child(1){ animation:cardIn .4s .05s both }
+    .card:nth-child(2){ animation:cardIn .4s .12s both }
+    .card:nth-child(3){ animation:cardIn .4s .19s both }
+    .card:nth-child(4){ animation:cardIn .4s .26s both }
+    .card:nth-child(5){ animation:cardIn .4s .33s both }
+    @keyframes cardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    /* SERVICE BLOCK (inside modal) */
+    .svc-block {
+      border:1.5px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px;
+    }
+    .svc-hdr {
+      display:flex; align-items:center; gap:10px;
+      padding:11px 15px; font-size:13px; font-weight:700;
+      border-bottom:1.5px solid var(--border);
+    }
+    .svc-hdr i { font-size:13px; }
+    .svc-body { padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+    .svc-row {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 11px; background:var(--bg); border-radius:9px;
+    }
+    .svc-row i   { width:16px; text-align:center; color:var(--pink); font-size:12px; flex-shrink:0; }
+    .svc-row .lbl { font-size:11px; color:var(--muted); min-width:58px; flex-shrink:0; }
+    .svc-row .val {
+      font-size:11.5px; font-weight:500; color:var(--text);
+      font-family:'Courier New',monospace; flex:1; word-break:break-all;
+    }
+    .svc-open {
+      display:flex; align-items:center; justify-content:center; gap:7px;
+      padding:9px 15px; font-size:13px; font-weight:600; font-family:inherit;
+      border:none; border-radius:10px; cursor:pointer; text-decoration:none;
+      color:#fff; transition:filter .2s; margin:0 12px 12px;
+    }
+    .svc-open:hover { filter:brightness(1.1); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">inh</div>
+    <h1>POC Portal</h1>
+    <p>Enter your access password to view the&nbsp;Proof&nbsp;of&nbsp;Concept projects.</p>
+    <div class="input-wrap">
+      <input type="password" id="pw" placeholder="Access password" onkeydown="if(event.key==='Enter')login()" />
+      <button class="eye-btn" onclick="toggleEye()" id="eye-btn"><i class="fa fa-eye" id="eye-ico"></i></button>
+    </div>
+    <button class="btn-login" onclick="login()">
+      <i class="fa fa-right-to-bracket"></i> Access Portal
+    </button>
+    <div class="err-msg" id="err"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <a class="h-brand" href="#">
+      <div class="h-logo">inh</div>
+      <span class="h-title">POC Portal</span>
+    </a>
+    <div class="h-sep"></div>
+    <div class="search-box">
+      <i class="fa fa-magnifying-glass"></i>
+      <input type="text" id="q" placeholder="Search POCs…" oninput="filter()" />
+    </div>
+    <div class="h-right">
+      <span class="pill-count" id="cnt">5 POCs</span>
+      <div class="avatar" title="Authenticated">P</div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">5</span></div>
+    <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">1</span></div>
+    <div class="tab"        data-cat="analytics"  onclick="setTab(this)">Analytics <span class="tc">1</span></div>
+    <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">3</span></div>
+  </div>
+
+  <!-- CONTENT -->
+  <main>
+    <div class="sec-hdr">
+      <div class="sec-title">My POCs</div>
+      <div class="sec-sub">All active Proof of Concept projects</div>
+    </div>
+
+    <div class="grid" id="grid">
+
+      <!-- ── CARD 1 · Inholland Chatbot ── -->
+      <div class="card" data-cat="ai" data-kw="inholland chatbot scraper ai nlp" onclick="open_modal('chatbot')">
+        <div class="card-top" style="background:linear-gradient(135deg,#E6007E33,#B5005F33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#E6007E,#B5005F)">
+            <i class="fa fa-robot"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">Inholland Chatbot</div>
+          <div class="c-desc">AI-powered chatbot with a live content scraper that indexes Inholland website content for intelligent Q&amp;A.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;Static Web App</span>
+            <span class="tag">AI · NLP</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://zealous-hill-09cc78503.4.azurestaticapps.net/','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('chatbot')">
+              <i class="fa fa-circle-info"></i> Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 2 · IRIS ── -->
+      <div class="card" data-cat="analytics" data-kw="iris reference metrics analytics dashboard" onclick="open_modal('iris')">
+        <div class="card-top" style="background:linear-gradient(135deg,#0078D433,#005A9E33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#0078D4,#005A9E)">
+            <i class="fa fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">IRIS Reference Metrics</div>
+          <div class="c-desc">Analytics dashboard providing intelligence metrics and reference data for data-driven decisions.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
+            <span class="tag">Analytics</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://iris-api-intel-dev-web.azurewebsites.net/','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('iris')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 3 · TeamTester Frontend ── -->
+      <div class="card" data-cat="testing" data-kw="teamtester frontend react ui team test" onclick="open_modal('tt-frontend')">
+        <div class="card-top" style="background:linear-gradient(135deg,#00A69333,#007A6C33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#00A693,#007A6C)">
+            <i class="fa fa-desktop"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">TeamTester &mdash; Frontend</div>
+          <div class="c-desc">React-based user interface for the TeamTester platform. Supports both admin and student roles with a clean, responsive UI.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;Container Apps</span>
+            <span class="tag">React</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('tt-frontend')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 4 · TeamTester Backend ── -->
+      <div class="card" data-cat="testing" data-kw="teamtester backend api rest server express node team" onclick="open_modal('tt-backend')">
+        <div class="card-top" style="background:linear-gradient(135deg,#7B2D8B33,#5B1D6B33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#7B2D8B,#5B1D6B)">
+            <i class="fa fa-server"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">TeamTester &mdash; Backend</div>
+          <div class="c-desc">REST API server powering the TeamTester platform. Handles authentication, team management, and test orchestration logic.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;Container Apps</span>
+            <span class="tag">REST API</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('tt-backend')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 5 · TeamTester API Docs ── -->
+      <div class="card" data-cat="testing" data-kw="teamtester api docs swagger openapi documentation" onclick="open_modal('tt-apidocs')">
+        <div class="card-top" style="background:linear-gradient(135deg,#F59E0B33,#D9770633)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706)">
+            <i class="fa fa-book-open"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">TeamTester &mdash; API Docs</div>
+          <div class="c-desc">Interactive Swagger / OpenAPI documentation for the TeamTester REST API. Explore and test endpoints directly in the browser.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;Container Apps</span>
+            <span class="tag">Swagger</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io/api-docs/','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('tt-apidocs')">
+              <i class="fa fa-circle-info"></i> Details
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+    <div class="no-results" id="no-res"><i class="fa fa-magnifying-glass"></i><p>No POCs match your search.</p></div>
+  </main>
+
+  <footer>Built for <b>Inholland</b> &mdash; POC Portal &copy; 2026</footer>
+</div><!-- /app -->
+
+
+<!-- ═══════════════ MODAL · Chatbot ═══════════════ -->
+<div class="overlay" id="m-chatbot" onclick="if(event.target===this)close_modal('chatbot')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#E6007E,#B5005F)"><i class="fa fa-robot"></i></div>
+      <div>
+        <div class="m-title">Inholland Chatbot</div>
+        <div class="m-sub">AI &amp; Chatbots &bull; Azure Static Web Apps</div>
+      </div>
+      <button class="m-close" onclick="close_modal('chatbot')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>An AI-powered chatbot with a live content scraper that automatically fetches and indexes content from the Inholland website, enabling intelligent Q&amp;A for students and staff.</p>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">URL</span>
+        <span class="val">zealous-hill-09cc78503.4.azurestaticapps.net</span>
+        <button class="copy-btn" onclick="cp('https://zealous-hill-09cc78503.4.azurestaticapps.net/',this)">Copy</button>
+      </div>
+    </div>
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure Static Web Apps</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">AI Chatbot / Web App</span></div>
+      <div class="m-row"><i class="fa fa-user-slash"></i><span class="lbl">Auth</span><span class="val">No login required</span></div>
+    </div>
+
+    <a href="https://zealous-hill-09cc78503.4.azurestaticapps.net/" target="_blank" class="m-open">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open Inholland Chatbot
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · IRIS ═══════════════ -->
+<div class="overlay" id="m-iris" onclick="if(event.target===this)close_modal('iris')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#0078D4,#005A9E)"><i class="fa fa-chart-line"></i></div>
+      <div>
+        <div class="m-title">IRIS Reference Metrics</div>
+        <div class="m-sub">Analytics &bull; Azure App Service</div>
+      </div>
+      <button class="m-close" onclick="close_modal('iris')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>Analytics dashboard providing reference metrics and intelligence insights. Helps teams make data-driven decisions through visual reporting and metric tracking.</p>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">URL</span>
+        <span class="val">iris-api-intel-dev-web.azurewebsites.net</span>
+        <button class="copy-btn" onclick="cp('https://iris-api-intel-dev-web.azurewebsites.net/',this)">Copy</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Login Credentials</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Email</span>
+        <span class="val">tester@iris-api.com</span>
+        <button class="copy-btn" onclick="cp('tester@iris-api.com',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@IrisIsRainbow$</span>
+        <button class="copy-btn" onclick="cp('@IrisIsRainbow$',this)">Copy</button>
+      </div>
+    </div>
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">Analytics Dashboard / REST API</span></div>
+    </div>
+
+    <a href="https://iris-api-intel-dev-web.azurewebsites.net/" target="_blank" class="m-open" style="background:linear-gradient(90deg,#0078D4,#005A9E)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open IRIS Reference Metrics
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · TeamTester Frontend ═══════════════ -->
+<div class="overlay" id="m-tt-frontend" onclick="if(event.target===this)close_modal('tt-frontend')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#00A693,#007A6C)"><i class="fa fa-desktop"></i></div>
+      <div>
+        <div class="m-title">TeamTester &mdash; Frontend</div>
+        <div class="m-sub">Testing Tools &bull; Azure Container Apps &bull; React</div>
+      </div>
+      <button class="m-close" onclick="close_modal('tt-frontend')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>React-based user interface for the TeamTester platform. Provides a clean, responsive UI for both admin and student roles, connecting to the backend API.</p>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Frontend block -->
+    <div class="svc-block">
+      <div class="svc-hdr" style="background:#E6FFF9; color:#007A6C">
+        <i class="fa fa-desktop"></i> Frontend Application
+      </div>
+      <div class="svc-body">
+        <div class="svc-row">
+          <i class="fa fa-link"></i><span class="lbl">URL</span>
+          <span class="val">teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io</span>
+          <button class="copy-btn" onclick="cp('https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io',this)">Copy</button>
+        </div>
+        <div class="svc-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure Container Apps &mdash; West Europe</span></div>
+        <div class="svc-row"><i class="fa fa-code"></i><span class="lbl">Stack</span><span class="val">React (SPA)</span></div>
+      </div>
+      <a href="https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#00A693,#007A6C)">
+        <i class="fa fa-arrow-up-right-from-square"></i> Open Frontend
+      </a>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Admin Credentials -->
+    <div class="m-section">
+      <h4>Admin Account</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
+        <span class="val">admin@teamtester.com</span>
+        <button class="copy-btn" onclick="cp('admin@teamtester.com',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i><span class="lbl">Password</span>
+        <span class="val">Admin123!</span>
+        <button class="copy-btn" onclick="cp('Admin123!',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Student Credentials -->
+    <div class="m-section">
+      <h4>Test Student Accounts (student1 – student10)</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
+        <span class="val">student[1–10]@teamtester.com</span>
+        <button class="copy-btn" onclick="cp('student1@teamtester.com',this)">Copy s1</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i><span class="lbl">Password</span>
+        <span class="val">Student123!</span>
+        <button class="copy-btn" onclick="cp('Student123!',this)">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · TeamTester Backend ═══════════════ -->
+<div class="overlay" id="m-tt-backend" onclick="if(event.target===this)close_modal('tt-backend')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#7B2D8B,#5B1D6B)"><i class="fa fa-server"></i></div>
+      <div>
+        <div class="m-title">TeamTester &mdash; Backend</div>
+        <div class="m-sub">Testing Tools &bull; Azure Container Apps &bull; REST API</div>
+      </div>
+      <button class="m-close" onclick="close_modal('tt-backend')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>REST API server powering the TeamTester platform. Handles authentication, team management, test orchestration, and exposes full OpenAPI documentation.</p>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Backend block -->
+    <div class="svc-block">
+      <div class="svc-hdr" style="background:#F5EEFF; color:#5B1D6B">
+        <i class="fa fa-server"></i> Backend API Server
+      </div>
+      <div class="svc-body">
+        <div class="svc-row">
+          <i class="fa fa-link"></i><span class="lbl">Base URL</span>
+          <span class="val">teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io</span>
+          <button class="copy-btn" onclick="cp('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io',this)">Copy</button>
+        </div>
+        <div class="svc-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure Container Apps &mdash; West Europe</span></div>
+        <div class="svc-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">REST API</span></div>
+      </div>
+      <a href="https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#7B2D8B,#5B1D6B)">
+        <i class="fa fa-arrow-up-right-from-square"></i> Open Backend
+      </a>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Admin Credentials -->
+    <div class="m-section">
+      <h4>Admin Account</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
+        <span class="val">admin@teamtester.com</span>
+        <button class="copy-btn" onclick="cp('admin@teamtester.com',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i><span class="lbl">Password</span>
+        <span class="val">Admin123!</span>
+        <button class="copy-btn" onclick="cp('Admin123!',this)">Copy</button>
+      </div>
+    </div>
+
+    <!-- Student Credentials -->
+    <div class="m-section">
+      <h4>Test Student Accounts (student1 – student10)</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
+        <span class="val">student[1–10]@teamtester.com</span>
+        <button class="copy-btn" onclick="cp('student1@teamtester.com',this)">Copy s1</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i><span class="lbl">Password</span>
+        <span class="val">Student123!</span>
+        <button class="copy-btn" onclick="cp('Student123!',this)">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · TeamTester API Docs ═══════════════ -->
+<div class="overlay" id="m-tt-apidocs" onclick="if(event.target===this)close_modal('tt-apidocs')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706)"><i class="fa fa-book-open"></i></div>
+      <div>
+        <div class="m-title">TeamTester &mdash; API Docs</div>
+        <div class="m-sub">Testing Tools &bull; Swagger / OpenAPI</div>
+      </div>
+      <button class="m-close" onclick="close_modal('tt-apidocs')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>Interactive Swagger UI exposing the full OpenAPI specification for the TeamTester REST API. Explore all endpoints, view request/response schemas, and test calls directly in the browser.</p>
+    </div>
+    <div class="divider"></div>
+
+    <!-- API Docs block -->
+    <div class="svc-block">
+      <div class="svc-hdr" style="background:#FEF9E7; color:#B45309">
+        <i class="fa fa-book-open"></i> Swagger / OpenAPI Documentation
+      </div>
+      <div class="svc-body">
+        <div class="svc-row">
+          <i class="fa fa-link"></i><span class="lbl">Docs URL</span>
+          <span class="val">.../api-docs/</span>
+          <button class="copy-btn" onclick="cp('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io/api-docs/',this)">Copy</button>
+        </div>
+        <div class="svc-row"><i class="fa fa-tag"></i><span class="lbl">Format</span><span class="val">Swagger UI (OpenAPI 3.x)</span></div>
+        <div class="svc-row"><i class="fa fa-user-slash"></i><span class="lbl">Auth</span><span class="val">No login required to browse docs</span></div>
+      </div>
+      <a href="https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io/api-docs/" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#F59E0B,#D97706)">
+        <i class="fa fa-arrow-up-right-from-square"></i> Open API Docs
+      </a>
+    </div>
+    <div class="divider"></div>
+
+    <div class="m-section">
+      <h4>Backend Base URL</h4>
+      <div class="m-row">
+        <i class="fa fa-server"></i><span class="lbl">API</span>
+        <span class="val">teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io</span>
+        <button class="copy-btn" onclick="cp('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io',this)">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ SCRIPT ═══════════════ -->
+<script>
+  const PASS = 'POC@Inholland2026!';
+
+  /* ── Login ── */
+  function login() {
+    const inp = document.getElementById('pw');
+    const err = document.getElementById('err');
+    if (inp.value === PASS) {
+      document.getElementById('login-screen').classList.add('out');
+      setTimeout(() => {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+      }, 500);
+    } else {
+      inp.classList.remove('shake');
+      void inp.offsetWidth; // reflow to restart animation
+      inp.classList.add('shake');
+      err.textContent = '⚠ Incorrect password. Please try again.';
+      inp.select();
+    }
+  }
+
+  function toggleEye() {
+    const inp = document.getElementById('pw');
+    const ico = document.getElementById('eye-ico');
+    if (inp.type === 'password') { inp.type = 'text';     ico.className = 'fa fa-eye-slash'; }
+    else                         { inp.type = 'password'; ico.className = 'fa fa-eye'; }
+  }
+
+  /* ── Filter / Search ── */
+  let activeCat = 'all';
+
+  function setTab(el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeCat = el.dataset.cat;
+    filter();
+  }
+
+  function filter() {
+    const q = document.getElementById('q').value.toLowerCase();
+    const cards = document.querySelectorAll('.card');
+    let vis = 0;
+    cards.forEach(c => {
+      const catOk  = activeCat === 'all' || c.dataset.cat === activeCat;
+      const kwOk   = !q || c.dataset.kw.includes(q) || c.querySelector('.c-name').textContent.toLowerCase().includes(q);
+      const show   = catOk && kwOk;
+      c.classList.toggle('hidden', !show);
+      if (show) vis++;
+    });
+    document.getElementById('cnt').textContent = vis + (vis === 1 ? ' POC' : ' POCs');
+    document.getElementById('no-res').style.display = vis ? 'none' : 'block';
+  }
+
+  /* ── Modals ── */
+  function open_modal(id) {
+    document.getElementById('m-' + id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function close_modal(id) {
+    document.getElementById('m-' + id).classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+      document.body.style.overflow = '';
+    }
+  });
+
+  /* ── Copy to clipboard ── */
+  function cp(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied';
+      btn.style.cssText = 'border-color:#059669;color:#059669';
+      setTimeout(() => { btn.textContent = orig; btn.style.cssText = ''; }, 1600);
+    });
+  }
+</script>
+</body>
+</html>

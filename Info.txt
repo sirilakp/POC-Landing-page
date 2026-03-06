@@ -1,0 +1,22 @@
+Inholland Chatbot with content scrapper: https://zealous-hill-09cc78503.4.azurestaticapps.net/
+
+Irish Reference Matrics
+https://iris-api-intel-dev-web.azurewebsites.net/
+Credentials: tester@iris-api.com / @IrisIsRainbow$
+
+
+
+TeamTester
+### Frontend
+**URL:** https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io
+
+### Backend API
+**URL:** https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io
+**API Docs:** https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io/api-docs/
+**Admin Account:**
+- Email: `admin@teamtester.com`
+- Password: `Admin123!`
+ 
+**Test Student Accounts:**
+- Email: `student1@teamtester.com` through `student10@teamtester.com`
+- Password: `Student123!` (same for all)

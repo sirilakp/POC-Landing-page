@@ -370,14 +370,14 @@
   <div class="tabs">
     <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">5</span></div>
     <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">1</span></div>
-    <div class="tab"        data-cat="analytics"  onclick="setTab(this)">Analytics <span class="tc">1</span></div>
+    <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">1</span></div>
     <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">3</span></div>
   </div>
 
   <!-- CONTENT -->
   <main>
     <div class="sec-hdr">
-      <div class="sec-title">My POCs</div>
+      <div class="sec-title">AI POCs</div>
       <div class="sec-sub">All active Proof of Concept projects</div>
     </div>
 
@@ -411,20 +411,20 @@
       </div>
 
       <!-- ── CARD 2 · IRIS ── -->
-      <div class="card" data-cat="analytics" data-kw="unified api intelligence analytics dashboard api documentation" onclick="open_modal('iris')">
+      <div class="card" data-cat="api" data-kw="iris api intelligence assistant api documentation integration endpoints" onclick="open_modal('iris')">
         <div class="card-top" style="background:linear-gradient(135deg,#0078D433,#005A9E33)">
           <div class="blob"></div>
           <div class="c-icon" style="background:linear-gradient(135deg,#0078D4,#005A9E)">
-            <i class="fa fa-chart-line"></i>
+            <i class="fa fa-code"></i>
           </div>
         </div>
         <div class="card-body">
-          <div class="c-name">Unified API Intelligence</div>
-          <div class="c-desc">Documentation-grounded Iris API assistant for consumers: explains endpoints and integration behavior from provided docs only, with Dutch/English responses and structured endpoint mapping support.</div>
+          <div class="c-name">Iris API Intelligence</div>
+          <div class="c-desc">Documentation-grounded API assistant for Iris consumers. It explains endpoints, request/response behavior, and integration patterns based only on provided docs, in Dutch or English.</div>
           <div class="tags">
             <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
             <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
-            <span class="tag">Analytics</span>
+            <span class="tag">API Assistant</span>
           </div>
           <div class="c-actions">
             <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://iris-api-intel-dev-web.azurewebsites.net/','_blank')">
@@ -570,17 +570,17 @@
 <div class="overlay" id="m-iris" onclick="if(event.target===this)close_modal('iris')">
   <div class="modal">
     <div class="m-hdr">
-      <div class="m-icon" style="background:linear-gradient(135deg,#0078D4,#005A9E)"><i class="fa fa-chart-line"></i></div>
+      <div class="m-icon" style="background:linear-gradient(135deg,#0078D4,#005A9E)"><i class="fa fa-code"></i></div>
       <div>
-        <div class="m-title">Unified API Intelligence</div>
-        <div class="m-sub">Analytics &bull; Azure App Service</div>
+        <div class="m-title">Iris API Intelligence</div>
+        <div class="m-sub">API Assistant &bull; Azure App Service</div>
       </div>
       <button class="m-close" onclick="close_modal('iris')"><i class="fa fa-xmark"></i></button>
     </div>
 
     <div class="m-section">
       <h4>About</h4>
-      <p>Expert Iris API assistant for Inholland's unified student information platform. It provides clear, technical, documentation-grounded guidance for API consumers, answers only from provided docs, supports Dutch or English responses, avoids assumptions, and helps with endpoint understanding including complete property mapping details when requested.</p>
+      <p>Expert Iris API assistant for Inholland's unified student information platform. It provides technical, documentation-grounded guidance for API consumers, answers only from provided docs, supports Dutch and English responses, avoids assumptions, and helps with endpoint understanding including full property mapping details when requested.</p>
     </div>
     <div class="divider"></div>
     <div class="m-section">
@@ -611,11 +611,11 @@
     <div class="m-section">
       <h4>Infrastructure</h4>
       <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service</span></div>
-      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">Analytics Dashboard / REST API</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">Documentation-Grounded API Assistant</span></div>
     </div>
 
     <a href="https://iris-api-intel-dev-web.azurewebsites.net/" target="_blank" class="m-open" style="background:linear-gradient(90deg,#0078D4,#005A9E)">
-      <i class="fa fa-arrow-up-right-from-square"></i> Open Unified API Intelligence
+      <i class="fa fa-arrow-up-right-from-square"></i> Open Iris API Intelligence
     </a>
   </div>
 </div>

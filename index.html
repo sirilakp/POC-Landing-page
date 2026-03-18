@@ -361,17 +361,17 @@
       <input type="text" id="q" placeholder="Search POCs…" oninput="filter()" />
     </div>
     <div class="h-right">
-      <span class="pill-count" id="cnt">5 POCs</span>
+      <span class="pill-count" id="cnt">4 POCs</span>
       <div class="avatar" title="Authenticated">P</div>
     </div>
   </header>
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">5</span></div>
+    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">4</span></div>
     <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">1</span></div>
     <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">1</span></div>
-    <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">3</span></div>
+    <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">2</span></div>
   </div>
 
   <!-- CONTENT -->
@@ -464,34 +464,7 @@
         </div>
       </div>
 
-      <!-- ── CARD 4 · TeamTester Backend ── -->
-      <div class="card" data-cat="testing" data-kw="teamtester backend api rest server express node team" onclick="open_modal('tt-backend')">
-        <div class="card-top" style="background:linear-gradient(135deg,#7B2D8B33,#5B1D6B33)">
-          <div class="blob"></div>
-          <div class="c-icon" style="background:linear-gradient(135deg,#7B2D8B,#5B1D6B)">
-            <i class="fa fa-server"></i>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="c-name">TeamTester &mdash; Backend</div>
-          <div class="c-desc">REST API server powering the TeamTester platform. Handles authentication, team management, and test orchestration logic.</div>
-          <div class="tags">
-            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
-            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;Container Apps</span>
-            <span class="tag">REST API</span>
-          </div>
-          <div class="c-actions">
-            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io','_blank')">
-              <i class="fa fa-arrow-up-right-from-square"></i> Open
-            </button>
-            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('tt-backend')">
-              <i class="fa fa-key"></i> Credentials
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── CARD 5 · TeamTester API Docs ── -->
+      <!-- ── CARD 4 · TeamTester API Docs ── -->
       <div class="card" data-cat="testing" data-kw="teamtester api docs swagger openapi documentation" onclick="open_modal('tt-apidocs')">
         <div class="card-top" style="background:linear-gradient(135deg,#F59E0B33,#D9770633)">
           <div class="blob"></div>
@@ -655,77 +628,6 @@
       </div>
       <a href="https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#00A693,#007A6C)">
         <i class="fa fa-arrow-up-right-from-square"></i> Open Frontend
-      </a>
-    </div>
-    <div class="divider"></div>
-
-    <!-- Admin Credentials -->
-    <div class="m-section">
-      <h4>Admin Account</h4>
-      <div class="m-row">
-        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
-        <span class="val">admin@teamtester.com</span>
-        <button class="copy-btn" onclick="cp('admin@teamtester.com',this)">Copy</button>
-      </div>
-      <div class="m-row">
-        <i class="fa fa-lock"></i><span class="lbl">Password</span>
-        <span class="val">Admin123!</span>
-        <button class="copy-btn" onclick="cp('Admin123!',this)">Copy</button>
-      </div>
-    </div>
-
-    <!-- Student Credentials -->
-    <div class="m-section">
-      <h4>Test Student Accounts (student1 – student10)</h4>
-      <div class="m-row">
-        <i class="fa fa-envelope"></i><span class="lbl">Email</span>
-        <span class="val">student[1–10]@teamtester.com</span>
-        <button class="copy-btn" onclick="cp('student1@teamtester.com',this)">Copy s1</button>
-      </div>
-      <div class="m-row">
-        <i class="fa fa-lock"></i><span class="lbl">Password</span>
-        <span class="val">Student123!</span>
-        <button class="copy-btn" onclick="cp('Student123!',this)">Copy</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ═══════════════ MODAL · TeamTester Backend ═══════════════ -->
-<div class="overlay" id="m-tt-backend" onclick="if(event.target===this)close_modal('tt-backend')">
-  <div class="modal">
-    <div class="m-hdr">
-      <div class="m-icon" style="background:linear-gradient(135deg,#7B2D8B,#5B1D6B)"><i class="fa fa-server"></i></div>
-      <div>
-        <div class="m-title">TeamTester &mdash; Backend</div>
-        <div class="m-sub">Testing Tools &bull; Azure Container Apps &bull; REST API</div>
-      </div>
-      <button class="m-close" onclick="close_modal('tt-backend')"><i class="fa fa-xmark"></i></button>
-    </div>
-
-    <div class="m-section">
-      <h4>About</h4>
-      <p>REST API server powering the TeamTester platform. Handles authentication, team management, test orchestration, and exposes full OpenAPI documentation.</p>
-    </div>
-    <div class="divider"></div>
-
-    <!-- Backend block -->
-    <div class="svc-block">
-      <div class="svc-hdr" style="background:#F5EEFF; color:#5B1D6B">
-        <i class="fa fa-server"></i> Backend API Server
-      </div>
-      <div class="svc-body">
-        <div class="svc-row">
-          <i class="fa fa-link"></i><span class="lbl">Base URL</span>
-          <span class="val">teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io</span>
-          <button class="copy-btn" onclick="cp('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io',this)">Copy</button>
-        </div>
-        <div class="svc-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure Container Apps &mdash; West Europe</span></div>
-        <div class="svc-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">REST API</span></div>
-      </div>
-      <a href="https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#7B2D8B,#5B1D6B)">
-        <i class="fa fa-arrow-up-right-from-square"></i> Open Backend
       </a>
     </div>
     <div class="divider"></div>

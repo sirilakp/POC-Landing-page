@@ -295,6 +295,7 @@
     .card:nth-child(3){ animation:cardIn .4s .19s both }
     .card:nth-child(4){ animation:cardIn .4s .26s both }
     .card:nth-child(5){ animation:cardIn .4s .33s both }
+    .card:nth-child(6){ animation:cardIn .4s .40s both }
     @keyframes cardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
 
     /* SERVICE BLOCK (inside modal) */
@@ -361,16 +362,16 @@
       <input type="text" id="q" placeholder="Search POCs…" oninput="filter()" />
     </div>
     <div class="h-right">
-      <span class="pill-count" id="cnt">4 POCs</span>
+      <span class="pill-count" id="cnt">5 POCs</span>
       <div class="avatar" title="Authenticated">P</div>
     </div>
   </header>
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">4</span></div>
+    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">5</span></div>
     <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">1</span></div>
-    <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">1</span></div>
+    <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">2</span></div>
     <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">2</span></div>
   </div>
 
@@ -491,6 +492,33 @@
         </div>
       </div>
 
+      <!-- ── CARD 5 · BackendApi V3 Intelligence ── -->
+      <div class="card" data-cat="api" data-kw="backend api v3 intelligence odata bea inholland institutional data documentation assistant" onclick="open_modal('bea-v3')">
+        <div class="card-top" style="background:linear-gradient(135deg,#7C3AED33,#5B21B633)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)">
+            <i class="fa fa-database"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">BackendApi V3 Intelligence</div>
+          <div class="c-desc">Documentation-grounded API assistant for BackendApi V3 consumers. Explains OData endpoints, role-based access levels (laag/middel/hoog/naw), entity properties, and integration patterns — in Dutch or English.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
+            <span class="tag">API Assistant</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://backend-api-v3-intel-dev-web.azurewebsites.net/','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('bea-v3')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /grid -->
     <div class="no-results" id="no-res"><i class="fa fa-magnifying-glass"></i><p>No POCs match your search.</p></div>
   </main>
@@ -589,6 +617,120 @@
 
     <a href="https://iris-api-intel-dev-web.azurewebsites.net/" target="_blank" class="m-open" style="background:linear-gradient(90deg,#0078D4,#005A9E)">
       <i class="fa fa-arrow-up-right-from-square"></i> Open Iris API Intelligence
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · BackendApi V3 Intelligence ═══════════════ -->
+<div class="overlay" id="m-bea-v3" onclick="if(event.target===this)close_modal('bea-v3')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><i class="fa fa-database"></i></div>
+      <div>
+        <div class="m-title">BackendApi V3 Intelligence</div>
+        <div class="m-sub">API Assistant &bull; Azure App Service</div>
+      </div>
+      <button class="m-close" onclick="close_modal('bea-v3')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>Expert BackendApi V3 assistant for Inholland's institutional data platform. Provides technical, documentation-grounded guidance on OData v4 endpoints, role-based access levels (<code>laag</code>, <code>middel</code>, <code>hoog</code>, <code>naw</code>), field-level visibility rules, entity properties, and integration patterns. Answers only from provided docs, supports Dutch and English, and covers educational, personnel, facility, and communication data.</p>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">URL</span>
+        <span class="val">backend-api-v3-intel-dev-web.azurewebsites.net</span>
+        <button class="copy-btn" onclick="cp('https://backend-api-v3-intel-dev-web.azurewebsites.net/',this)">Copy</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Login Credentials</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Email</span>
+        <span class="val">tester@backend-api.com</span>
+        <button class="copy-btn" onclick="cp('tester@backend-api.com',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@BackendApiV3$</span>
+        <button class="copy-btn" onclick="cp('@BackendApiV3$',this)">Copy</button>
+      </div>
+    </div>
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">Documentation-Grounded API Assistant</span></div>
+      <div class="m-row"><i class="fa fa-layer-group"></i><span class="lbl">API Version</span><span class="val">BackendApi V3 — v3.0.9 (.NET 8, OData v4)</span></div>
+      <div class="m-row"><i class="fa fa-shield-halved"></i><span class="lbl">Access Levels</span><span class="val">laag &bull; middel &bull; hoog &bull; naw</span></div>
+    </div>
+
+    <a href="https://backend-api-v3-intel-dev-web.azurewebsites.net/" target="_blank" class="m-open" style="background:linear-gradient(90deg,#7C3AED,#5B21B6)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open BackendApi V3 Intelligence
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · BackendApi V3 Intelligence ═══════════════ -->
+<div class="overlay" id="m-bea-v3" onclick="if(event.target===this)close_modal('bea-v3')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#7C3AED,#5B21B6)"><i class="fa fa-database"></i></div>
+      <div>
+        <div class="m-title">BackendApi V3 Intelligence</div>
+        <div class="m-sub">API Assistant &bull; Azure App Service</div>
+      </div>
+      <button class="m-close" onclick="close_modal('bea-v3')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>Expert BackendApi V3 assistant for Inholland's institutional data platform. Provides technical, documentation-grounded guidance on OData v4 endpoints, role-based access levels (<code>laag</code>, <code>middel</code>, <code>hoog</code>, <code>naw</code>), field-level visibility rules, entity properties, and integration patterns. Answers only from provided docs, supports Dutch and English, and covers educational, personnel, facility, and communication data.</p>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">URL</span>
+        <span class="val">backend-api-v3-intel-dev-web.azurewebsites.net</span>
+        <button class="copy-btn" onclick="cp('https://backend-api-v3-intel-dev-web.azurewebsites.net/',this)">Copy</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Login Credentials</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Email</span>
+        <span class="val">tester@backend-api.com</span>
+        <button class="copy-btn" onclick="cp('tester@backend-api.com',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@BackendApiV3$</span>
+        <button class="copy-btn" onclick="cp('@BackendApiV3$',this)">Copy</button>
+      </div>
+    </div>
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">Documentation-Grounded API Assistant</span></div>
+      <div class="m-row"><i class="fa fa-layer-group"></i><span class="lbl">API Version</span><span class="val">BackendApi V3 &mdash; v3.0.9 (.NET 8, OData v4)</span></div>
+      <div class="m-row"><i class="fa fa-shield-halved"></i><span class="lbl">Access Levels</span><span class="val">laag &bull; middel &bull; hoog &bull; naw</span></div>
+    </div>
+
+    <a href="https://backend-api-v3-intel-dev-web.azurewebsites.net/" target="_blank" class="m-open" style="background:linear-gradient(90deg,#7C3AED,#5B21B6)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open BackendApi V3 Intelligence
     </a>
   </div>
 </div>

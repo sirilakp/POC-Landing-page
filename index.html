@@ -362,15 +362,15 @@
       <input type="text" id="q" placeholder="Search POCs…" oninput="filter()" />
     </div>
     <div class="h-right">
-      <span class="pill-count" id="cnt">5 POCs</span>
+      <span class="pill-count" id="cnt">6 POCs</span>
       <div class="avatar" title="Authenticated">P</div>
     </div>
   </header>
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">5</span></div>
-    <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">1</span></div>
+    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">6</span></div>
+    <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">2</span></div>
     <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">2</span></div>
     <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">2</span></div>
   </div>
@@ -513,6 +513,33 @@
               <i class="fa fa-arrow-up-right-from-square"></i> Open
             </button>
             <button class="btn btn-s" onclick="event.stopPropagation();open_modal('bea-v3')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 6 · Agile Doc Discovery ── -->
+      <div class="card" data-cat="ai" data-kw="agile documentation discovery rag sharepoint search ai knowledge lynn" onclick="open_modal('agile-docs')">
+        <div class="card-top" style="background:linear-gradient(135deg,#05966933,#04785733)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#059669,#047857)">
+            <i class="fa fa-magnifying-glass-chart"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">Agile Doc Discovery</div>
+          <div class="c-desc">AI-powered RAG assistant that retrieves Agile documentation from Inholland SharePoint and approved sources. Answers are strictly grounded in indexed content &mdash; never invented.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
+            <span class="tag">RAG &middot; AI</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://agile-app-j3zzpgsh3ba54.azurewebsites.net','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('agile-docs')">
               <i class="fa fa-key"></i> Credentials
             </button>
           </div>
@@ -853,6 +880,63 @@
         <button class="copy-btn" onclick="cp('https://teamtester-backend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io',this)">Copy</button>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · Agile Doc Discovery ═══════════════ -->
+<div class="overlay" id="m-agile-docs" onclick="if(event.target===this)close_modal('agile-docs')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#059669,#047857)"><i class="fa fa-magnifying-glass-chart"></i></div>
+      <div>
+        <div class="m-title">Agile Doc Discovery</div>
+        <div class="m-sub">AI &amp; Chatbots &bull; Azure App Service</div>
+      </div>
+      <button class="m-close" onclick="close_modal('agile-docs')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>An AI-powered Retrieval Augmented Generation (RAG) assistant for discovering Agile-related documentation. Retrieves content from Inholland SharePoint and approved external sources, then generates answers strictly grounded in indexed documents &mdash; it never invents, infers, or speculates beyond retrieved content.</p>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">URL</span>
+        <span class="val">agile-app-j3zzpgsh3ba54.azurewebsites.net</span>
+        <button class="copy-btn" onclick="cp('https://agile-app-j3zzpgsh3ba54.azurewebsites.net',this)">Copy</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="m-section">
+      <h4>Login Credentials</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Email</span>
+        <span class="val">doc-user@inholland.nl</span>
+        <button class="copy-btn" onclick="cp('doc-user@inholland.nl',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@User1234567890$</span>
+        <button class="copy-btn" onclick="cp('@User1234567890$',this)">Copy</button>
+      </div>
+    </div>
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service</span></div>
+      <div class="m-row"><i class="fa fa-tag"></i><span class="lbl">Type</span><span class="val">RAG-Based Documentation Assistant</span></div>
+      <div class="m-row"><i class="fa fa-database"></i><span class="lbl">Search</span><span class="val">Azure AI Search (Vector Index)</span></div>
+      <div class="m-row"><i class="fa fa-brain"></i><span class="lbl">AI</span><span class="val">Azure OpenAI &mdash; RAG Pattern</span></div>
+    </div>
+
+    <a href="https://agile-app-j3zzpgsh3ba54.azurewebsites.net" target="_blank" class="m-open" style="background:linear-gradient(90deg,#059669,#047857)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open Agile Doc Discovery
+    </a>
   </div>
 </div>
 

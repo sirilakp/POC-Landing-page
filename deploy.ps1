@@ -6,6 +6,7 @@
 # ============================================================
 
 # ── CONFIG — edit these if you want different names ─────────
+$SubscriptionId = "57e06a1b-75a1-4b64-bddc-3cff91bef2c6"   # Visual Studio Enterprise Subscription
 $ResourceGroup  = "rg-poc-portal"
 $AppName        = "poc-portal-inholland"
 $Location       = "westeurope"
@@ -52,20 +53,11 @@ if (-not $account) {
     $account = az account show | ConvertFrom-Json
 }
 Write-Ok "Logged in as: $($account.user.name)"
-Write-Ok "Subscription:  $($account.name) ($($account.id))"
 
-# Ask to confirm or switch subscription
-Write-Host ""
-$confirm = Read-Host "  Use this subscription? [Y/n]"
-if ($confirm -match '^[Nn]') {
-    Write-Host ""
-    az account list --output table
-    Write-Host ""
-    $subId = Read-Host "  Enter Subscription ID to use"
-    az account set --subscription $subId
-    $account = az account show | ConvertFrom-Json
-    Write-Ok "Switched to: $($account.name)"
-}
+# Always use the fixed subscription defined in CONFIG
+az account set --subscription $SubscriptionId
+$account = az account show | ConvertFrom-Json
+Write-Ok "Subscription:  $($account.name) ($($account.id))"
 
 # ── 4. Create Resource Group ─────────────────────────────────
 Write-Step "Ensuring resource group '$ResourceGroup' exists in '$Location'..."
@@ -134,9 +126,9 @@ $filesToDeploy | ForEach-Object {
     Write-Host "    · $($_.Name)" -ForegroundColor Gray
 }
 
-$subscriptionId = az account show --query "id" -o tsv
-if (-not $subscriptionId) {
-    Write-Fail "Could not resolve Azure subscription ID."
+# Use the fixed subscription ID from CONFIG
+if (-not $SubscriptionId) {
+    Write-Fail "SubscriptionId is not set in CONFIG."
 }
 
 # Some environments leak DEPLOYMENT_ACTION=close, which causes SWA uploads to fail.
@@ -150,7 +142,7 @@ try {
         --env production `
         --app-name $AppName `
         --resource-group $ResourceGroup `
-        --subscription-id $subscriptionId `
+        --subscription-id $SubscriptionId `
         --swa-config-location "site" `
         --no-use-keychain
 

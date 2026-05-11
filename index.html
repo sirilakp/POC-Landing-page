@@ -296,6 +296,8 @@
     .card:nth-child(4){ animation:cardIn .4s .26s both }
     .card:nth-child(5){ animation:cardIn .4s .33s both }
     .card:nth-child(6){ animation:cardIn .4s .40s both }
+    .card:nth-child(7){ animation:cardIn .4s .47s both }
+    .card:nth-child(8){ animation:cardIn .4s .54s both }
     @keyframes cardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
 
     /* SERVICE BLOCK (inside modal) */
@@ -369,8 +371,8 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">6</span></div>
-    <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">2</span></div>
+    <div class="tab active" data-cat="all"       onclick="setTab(this)">All <span class="tc">8</span></div>
+    <div class="tab"        data-cat="ai"         onclick="setTab(this)">AI &amp; Chatbots <span class="tc">4</span></div>
     <div class="tab"        data-cat="api"        onclick="setTab(this)">API Assistant <span class="tc">2</span></div>
     <div class="tab"        data-cat="testing"    onclick="setTab(this)">Testing Tools <span class="tc">2</span></div>
   </div>
@@ -540,6 +542,60 @@
               <i class="fa fa-arrow-up-right-from-square"></i> Open
             </button>
             <button class="btn btn-s" onclick="event.stopPropagation();open_modal('agile-docs')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 7 · PII Filter Demo UI ── -->
+      <div class="card" data-cat="ai" data-kw="pii filter demo privacy redaction dutch text language categorization web ui inholland" onclick="open_modal('pii-web')">
+        <div class="card-top" style="background:linear-gradient(135deg,#F9731633,#C2410C33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#F97316,#C2410C)">
+            <i class="fa fa-user-shield"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">PII Filter &mdash; Demo UI</div>
+          <div class="c-desc">Interactive demo that strips PII from Dutch support messages and classifies them via Azure AI Language + GPT-4o &mdash; before any text reaches a generative AI model.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
+            <span class="tag">Privacy &middot; AI</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://pii-filter-web.azurewebsites.net/Demo','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> Open
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('pii-web')">
+              <i class="fa fa-key"></i> Credentials
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 8 · PII Filter REST API ── -->
+      <div class="card" data-cat="ai" data-kw="pii filter api rest basic auth scalar redaction categorization privacy dotnet aspnet" onclick="open_modal('pii-api')">
+        <div class="card-top" style="background:linear-gradient(135deg,#DC262633,#7F1D1D33)">
+          <div class="blob"></div>
+          <div class="c-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B)">
+            <i class="fa fa-filter"></i>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="c-name">PII Filter &mdash; REST API</div>
+          <div class="c-desc">HTTP Basic-authenticated ASP.NET Core REST API. Redacts PII with Azure AI Language, classifies with GPT-4o, and exposes interactive Scalar docs at /scalar/v1.</div>
+          <div class="tags">
+            <span class="tag live"><i class="fa fa-circle" style="font-size:7px"></i>&ensp;Live</span>
+            <span class="tag azure"><i class="fa fa-cloud"></i>&ensp;App Service</span>
+            <span class="tag">REST API</span>
+          </div>
+          <div class="c-actions">
+            <button class="btn btn-p" onclick="event.stopPropagation();window.open('https://pii-filter-api.azurewebsites.net/scalar/v1','_blank')">
+              <i class="fa fa-arrow-up-right-from-square"></i> API Docs
+            </button>
+            <button class="btn btn-s" onclick="event.stopPropagation();open_modal('pii-api')">
               <i class="fa fa-key"></i> Credentials
             </button>
           </div>
@@ -936,6 +992,162 @@
 
     <a href="https://agile-app-j3zzpgsh3ba54.azurewebsites.net" target="_blank" class="m-open" style="background:linear-gradient(90deg,#059669,#047857)">
       <i class="fa fa-arrow-up-right-from-square"></i> Open Agile Doc Discovery
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · PII Filter Demo UI ═══════════════ -->
+<div class="overlay" id="m-pii-web" onclick="if(event.target===this)close_modal('pii-web')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#F97316,#C2410C)"><i class="fa fa-user-shield"></i></div>
+      <div>
+        <div class="m-title">PII Filter &mdash; Demo UI</div>
+        <div class="m-sub">Privacy &amp; AI &bull; Azure App Service &bull; .NET 10</div>
+      </div>
+      <button class="m-close" onclick="close_modal('pii-web')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>An ASP.NET Core MVC demo interface for the PII Text Filter pipeline. Paste any Dutch support message, click <strong>Process</strong>, and instantly see the full JSON request &amp; response side by side &mdash; including the redacted text that was sent to the AI model and the chosen category with its confidence score.</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="m-section">
+      <h4>Application URL</h4>
+      <div class="m-row">
+        <i class="fa fa-link"></i>
+        <span class="lbl">Demo UI</span>
+        <span class="val">pii-filter-web.azurewebsites.net/Demo</span>
+        <button class="copy-btn" onclick="cp('https://pii-filter-web.azurewebsites.net/Demo',this)">Copy</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="m-section">
+      <h4>Login Credentials</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Username</span>
+        <span class="val">user.piifilter@inholland.nl</span>
+        <button class="copy-btn" onclick="cp('user.piifilter@inholland.nl',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@piiUserFilter3.14159</span>
+        <button class="copy-btn" onclick="cp('@piiUserFilter3.14159',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="m-section">
+      <h4>Infrastructure</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service (B1 &mdash; West Europe)</span></div>
+      <div class="m-row"><i class="fa fa-code"></i><span class="lbl">Stack</span><span class="val">ASP.NET Core MVC &mdash; .NET 10</span></div>
+      <div class="m-row"><i class="fa fa-cookie-bite"></i><span class="lbl">Auth</span><span class="val">Cookie-based form auth (HttpOnly, 8 h sliding session)</span></div>
+    </div>
+
+    <a href="https://pii-filter-web.azurewebsites.net/Demo" target="_blank" class="m-open" style="background:linear-gradient(90deg,#F97316,#EA580C)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open PII Filter Demo
+    </a>
+  </div>
+</div>
+
+
+<!-- ═══════════════ MODAL · PII Filter REST API ═══════════════ -->
+<div class="overlay" id="m-pii-api" onclick="if(event.target===this)close_modal('pii-api')">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B)"><i class="fa fa-filter"></i></div>
+      <div>
+        <div class="m-title">PII Filter &mdash; REST API</div>
+        <div class="m-sub">Privacy &amp; AI &bull; Azure App Service &bull; .NET 10</div>
+      </div>
+      <button class="m-close" onclick="close_modal('pii-api')"><i class="fa fa-xmark"></i></button>
+    </div>
+
+    <div class="m-section">
+      <h4>About</h4>
+      <p>An ASP.NET Core Web API implementing a two-stage, privacy-safe text processing pipeline for Dutch student support messages. PII is stripped <em>before</em> any text reaches a generative AI model, ensuring GDPR-compliant categorisation of sensitive correspondence. Categories are configurable at runtime through dedicated CRUD endpoints.</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="m-section">
+      <h4>How It Works</h4>
+      <div class="m-row">
+        <i class="fa fa-pen-to-square"></i>
+        <span class="lbl" style="min-width:80px">&#9312; Input</span>
+        <span class="val">Client POSTs { &quot;text&quot;: &quot;...&quot; } to /api/categorize with HTTP Basic Auth credentials</span>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-user-secret" style="color:#0078D4"></i>
+        <span class="lbl" style="min-width:80px">&#9313; Redact</span>
+        <span class="val">Azure AI Language (Text Analytics) detects and replaces names, BSNs, emails, phone numbers, and addresses with ****</span>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-brain" style="color:#7C3AED"></i>
+        <span class="lbl" style="min-width:80px">&#9314; Classify</span>
+        <span class="val">Azure OpenAI (GPT-4o) classifies the redacted text into a configurable Dutch category tree &mdash; the raw text never reaches the LLM</span>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-circle-check" style="color:#059669"></i>
+        <span class="lbl" style="min-width:80px">&#9315; Response</span>
+        <span class="val">Returns redactedText, hoofdonderwerp, subonderwerp, and confidence (high / medium / low)</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="svc-block">
+      <div class="svc-hdr" style="background:#FEF2F2; color:#B91C1C">
+        <i class="fa fa-server"></i> Endpoints
+      </div>
+      <div class="svc-body">
+        <div class="svc-row">
+          <i class="fa fa-link"></i><span class="lbl">Base URL</span>
+          <span class="val">pii-filter-api.azurewebsites.net</span>
+          <button class="copy-btn" onclick="cp('https://pii-filter-api.azurewebsites.net',this)">Copy</button>
+        </div>
+        <div class="svc-row">
+          <i class="fa fa-book-open"></i><span class="lbl">API Docs</span>
+          <span class="val">pii-filter-api.azurewebsites.net/scalar/v1</span>
+          <button class="copy-btn" onclick="cp('https://pii-filter-api.azurewebsites.net/scalar/v1',this)">Copy</button>
+        </div>
+      </div>
+      <a href="https://pii-filter-api.azurewebsites.net/scalar/v1" target="_blank" class="svc-open" style="background:linear-gradient(90deg,#DC2626,#991B1B)">
+        <i class="fa fa-arrow-up-right-from-square"></i> Open Scalar API Docs
+      </a>
+    </div>
+    <div class="divider"></div>
+
+    <div class="m-section">
+      <h4>API Credentials (HTTP Basic Auth)</h4>
+      <div class="m-row">
+        <i class="fa fa-envelope"></i>
+        <span class="lbl">Username</span>
+        <span class="val">admin.piifilter@inholland.nl</span>
+        <button class="copy-btn" onclick="cp('admin.piifilter@inholland.nl',this)">Copy</button>
+      </div>
+      <div class="m-row">
+        <i class="fa fa-lock"></i>
+        <span class="lbl">Password</span>
+        <span class="val">@piiAdminFilter3.14159</span>
+        <button class="copy-btn" onclick="cp('@piiAdminFilter3.14159',this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="m-section">
+      <h4>Azure Services</h4>
+      <div class="m-row"><i class="fa fa-cloud"></i><span class="lbl">Hosting</span><span class="val">Azure App Service (B1 &mdash; West Europe)</span></div>
+      <div class="m-row"><i class="fa fa-language"></i><span class="lbl">PII Detection</span><span class="val">Azure AI Language &mdash; Text Analytics (F0 tier)</span></div>
+      <div class="m-row"><i class="fa fa-brain"></i><span class="lbl">Classification</span><span class="val">Azure OpenAI &mdash; GPT-4o (2024-11-20 deployment)</span></div>
+      <div class="m-row"><i class="fa fa-code"></i><span class="lbl">Stack</span><span class="val">ASP.NET Core Web API &mdash; .NET 10</span></div>
+      <div class="m-row"><i class="fa fa-shield-halved"></i><span class="lbl">Security</span><span class="val">HTTPS-only &bull; HTTP Basic Auth &bull; CORS locked down</span></div>
+    </div>
+
+    <a href="https://pii-filter-api.azurewebsites.net/scalar/v1" target="_blank" class="m-open" style="background:linear-gradient(90deg,#DC2626,#991B1B)">
+      <i class="fa fa-arrow-up-right-from-square"></i> Open API Docs (Scalar)
     </a>
   </div>
 </div>

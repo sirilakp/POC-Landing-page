@@ -44,7 +44,14 @@ Real Tenant (Production)          Test Tenant
 
 ### Per-POC Access Control
 
-In addition to the two app roles, **each POC entry carries its own access list** (a list of user object IDs / emails). A `POC.Viewer` sees only the POCs whose access list contains their identity. A `POC.Admin` always sees every POC regardless of the list. This is enforced in `PocService.GetVisibleForUserAsync(...)` (see Phase 5) by filtering the JSON store against the signed-in user's `oid` claim.
+Everyone who can sign in to the landing page holds the single `POC.Viewer` role (assigned at invite time). **Each POC entry then carries its own access list** that further filters what each viewer sees:
+
+- `AllowedUserIds: string[]` — Entra **object IDs** (`oid`) of users granted access to this POC.
+- `AllowAllViewers: bool` — convenience flag; when `true`, every signed-in viewer sees this POC regardless of the list. Future invitees are automatically included.
+
+A `POC.Viewer` sees a POC if `AllowAllViewers == true` OR their `oid` is in `AllowedUserIds`. A `POC.Admin` always sees every POC regardless. Enforced in `PocService.GetVisibleForUserAsync(...)` (see Phase 5) against the signed-in user's `oid` claim.
+
+**Email-only input — `oid` is resolved by the backend.** Admins type or pick an **email address** in the UI; they never see or handle `oid`s. On save, the backend calls Graph (`GET /users/{email}` — works for both UPN and `mail`) to resolve each email to its `oid`, and stores the `oid` (stable across email renames). Displaying the access list reverses the lookup to show the email/display name. See `IUserDirectoryService` in Phase 2g below.
 
 Roles are defined as **App Roles** in the App Registration manifest in the Test Tenant. Guest users from the Real Tenant are assigned one of these roles in **Enterprise Applications → Users and Groups** in the Test Tenant.
 
@@ -442,43 +449,72 @@ A second admin section (also restricted to `POC.Admin`), sitting **next to** the
 
 Two stacked sections:
 
-1. **Existing POCs table** — Name · URL · Short description · # users with access · Actions (Edit · Manage access · Delete).
+1. **Existing POCs table** — Name · URL · Short description · Access ("All viewers" badge or "N users") · Actions (Edit · Delete).
 2. **Add / edit POC form** — opens inline or in a modal:
 
 ```
-┌───────────────────────────────────────────────────────────┐
-│  Add / edit POC                                           │
-│                                                           │
-│  Name:         [______________________________]           │
-│  URL:          [______________________________]           │
-│  Description:  [                              ]           │
-│                [                              ]           │
-│                [                              ]           │
-│                [ ✨ Generate with AI ]   (optional)        │
-│                                                           │
-│  Allowed users (Viewers):                                 │
-│   [+ Add user ▼]   (typeahead of B2B guests)              │
-│   • alice@inholland.nl        [x]                         │
-│   • bob@inholland.nl          [x]                         │
-│                                                           │
-│                       [Cancel]    [Save]                  │
-└───────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Add / edit POC                                              │
+│                                                              │
+│  Name:         [______________________________]              │
+│  URL:          [______________________________]              │
+│  Description:  [                              ]              │
+│                [                              ]              │
+│                [                              ]              │
+│                [ ✨ Generate with AI ]   (optional)           │
+│                                                              │
+│  Who can see this POC:                                       │
+│   ☐ All viewers (everyone with landing-page access)          │
+│   ───────────────────────────────────────                    │
+│   ☑ alice@inholland.nl     Alice de Vries                    │
+│   ☐ bob@inholland.nl       Bob Jansen                        │
+│   ☑ carol@inholland.nl     Carol Smit                        │
+│   ☐ dave@inholland.nl      Dave Pieters                      │
+│   [ search users… ]                                          │
+│                                                              │
+│                              [Cancel]    [Save]              │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-- The **Allowed users** typeahead is populated from `GET /api/invitations/guests` (same source as the user-management page) so admins can only grant access to users who already exist in the tenant.
+- The user list is the same set of accounts the admin sees on **Manage Users** — sourced from `GET /api/invitations/guests`. Admins can only grant access to users who already exist in the tenant; to grant access to a new person, invite them on the Users page first.
+- Ticking **All viewers** disables the per-user checkboxes (visually greyed-out) and sets `AllowAllViewers = true`. Untick it to fall back to the explicit list. Future invitees automatically inherit access when this is on.
+- Search box filters the list client-side by email or display name.
+- The form posts an **array of email addresses** plus the `allowAll` flag — never `oid`s — and the backend resolves emails to `oid`s via Graph before saving (see `IUserDirectoryService` below).
 - The **✨ Generate with AI** button calls `POST /api/pocs/generate-description` (see Phase 8) and fills the description textarea with the response. The admin can edit the result before saving.
-- Admins always see every POC; the "Allowed users" list is irrelevant to them at view time but is what gates `POC.Viewer` access.
+- Admins always see every POC; the access list only gates `POC.Viewer` users.
+
+**Email → `oid` resolution — `IUserDirectoryService`**
+
+```csharp
+public interface IUserDirectoryService
+{
+    /// Resolve a single email (UPN or mail) to its Entra object ID.
+    /// Returns null if the user doesn't exist in the tenant.
+    Task<string?> ResolveEmailToOidAsync(string email);
+
+    /// Bulk resolve — used when saving a POC's access list. Returns
+    /// (resolved oids, unresolved emails) so the UI can surface bad inputs.
+    Task<(List<string> Oids, List<string> Unresolved)> ResolveEmailsAsync(IEnumerable<string> emails);
+
+    /// Reverse lookup for displaying an existing POC's access list.
+    Task<Dictionary<string, (string Email, string DisplayName)>> GetUsersByOidAsync(IEnumerable<string> oids);
+}
+```
+
+Implementation hits Graph: `GET /users/{email}?$select=id,mail,userPrincipalName,displayName` for single lookups, and a batched `$filter=id in (...)` for the reverse map. Cache results in `IMemoryCache` for ~5 minutes to keep the edit form snappy.
 
 **API additions (`Api/PocsController.cs`)**
+
+> All access-list inputs use **emails**, never `oid`s. The controller resolves emails to `oid`s via `IUserDirectoryService` before persisting and returns the canonical `oid` list + any unresolved emails in the response so the UI can flag them.
 
 | Verb | Route | Body / Result |
 |---|---|---|
 | `GET`    | `/api/pocs`                       | All POCs (admin) **or** only those the caller has access to (viewer) |
-| `POST`   | `/api/pocs`                       | Create POC — `{ name, url, description, allowedUserIds[] }` |
+| `POST`   | `/api/pocs`                       | Create POC — `{ name, url, description, allowAllViewers, allowedEmails[] }` |
 | `PUT`    | `/api/pocs/{id}`                  | Update POC fields |
 | `DELETE` | `/api/pocs/{id}`                  | Delete POC |
-| `GET`    | `/api/pocs/{id}/access`           | List of users with access to this POC |
-| `PUT`    | `/api/pocs/{id}/access`           | Replace access list — `{ allowedUserIds[] }` |
+| `GET`    | `/api/pocs/{id}/access`           | Returns `{ allowAllViewers, users: [{ email, displayName }] }` (oids resolved server-side) |
+| `PUT`    | `/api/pocs/{id}/access`           | Replace access list — `{ allowAllViewers, allowedEmails[] }`; response includes `unresolvedEmails[]` |
 | `POST`   | `/api/pocs/generate-description`  | LLM description — see Phase 8 |
 
 **Model — `Models/PocEntry.cs`**
@@ -491,8 +527,13 @@ public class PocEntry
     public string Url         { get; set; } = "";
     public string Description { get; set; } = "";
 
+    /// When true, every signed-in POC.Viewer sees this POC and AllowedUserIds is ignored.
+    /// Future invitees automatically inherit access.
+    public bool AllowAllViewers { get; set; } = false;
+
     /// Entra ID object IDs (`oid` claim) of users who may view this POC.
-    /// Empty list = no Viewers can see it (admins still see everything).
+    /// Only consulted when AllowAllViewers is false.
+    /// Stored as oids (stable) but never accepted as input — the API takes emails and resolves them.
     public List<string> AllowedUserIds { get; set; } = new();
 }
 ```
@@ -646,11 +687,15 @@ public async Task<List<PocEntry>> GetAllAsync()
     return JsonSerializer.Deserialize<List<PocEntry>>(download.Value.Content) ?? new();
 }
 
-// Used by HomeController for non-admin viewers: only return POCs whose AllowedUserIds contains the caller's oid.
+// Used by HomeController for non-admin viewers.
+// A POC is visible if AllowAllViewers is on, OR the caller's oid is in AllowedUserIds.
 public async Task<List<PocEntry>> GetVisibleForUserAsync(string userOid)
 {
     var all = await GetAllAsync();
-    return all.Where(p => p.AllowedUserIds.Contains(userOid, StringComparer.OrdinalIgnoreCase)).ToList();
+    return all
+        .Where(p => p.AllowAllViewers
+                 || p.AllowedUserIds.Contains(userOid, StringComparer.OrdinalIgnoreCase))
+        .ToList();
 }
 
 public async Task SaveAsync(List<PocEntry> entries)

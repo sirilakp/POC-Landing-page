@@ -1,0 +1,65 @@
+@model IReadOnlyList<GuestUser>
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Manage Users</h1>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Invite a new user</h5>
+        <form id="invite-form" class="row g-2">
+            <div class="col-md-6">
+                <input type="email" class="form-control" id="invite-email" placeholder="user@inholland.nl" required />
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="invite-role">
+                    <option value="POC.Viewer" selected>POC Viewer</option>
+                    <option value="POC.Admin">POC Admin</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-grid">
+                <button type="submit" class="btn btn-primary">Send invitation</button>
+            </div>
+        </form>
+        <div id="invite-status" class="mt-2 small"></div>
+    </div>
+</div>
+
+<h5>Current guests</h5>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Display name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Invite status</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var guest in Model)
+    {
+        <tr data-user-id="@guest.Id">
+            <td>@guest.DisplayName</td>
+            <td>@guest.Email</td>
+            <td>
+                <select class="form-select form-select-sm role-select">
+                    <option value="POC.Viewer" selected="@(guest.Role == "POC.Viewer")">POC Viewer</option>
+                    <option value="POC.Admin" selected="@(guest.Role == "POC.Admin")">POC Admin</option>
+                </select>
+            </td>
+            <td>@guest.InviteStatus</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger revoke-user" data-id="@guest.Id">Revoke</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="~/js/invitations.js" asp-append-version="true"></script>
+}

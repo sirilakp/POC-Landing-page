@@ -1,0 +1,118 @@
+@model IReadOnlyList<PocEntry>
+@{
+    ViewData["Title"] = "Manage POCs";
+    var users = ViewBag.Users as IDictionary<string, UserSummary> ?? new Dictionary<string, UserSummary>();
+    var aiEnabled = (bool)(ViewBag.AiEnabled ?? false);
+    var guests = ViewBag.AvailableGuests as IReadOnlyList<GuestUser> ?? new List<GuestUser>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Manage POCs</h1>
+    <button type="button" class="btn btn-primary" id="add-poc-btn" data-bs-toggle="modal" data-bs-target="#poc-modal">
+        + Add POC
+    </button>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>URL</th>
+            <th>Description</th>
+            <th>Access</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var poc in Model)
+    {
+        var access = poc.AllowAllViewers
+            ? "<span class='badge bg-success'>All viewers</span>"
+            : $"<span class='badge bg-secondary'>{poc.AllowedUserIds.Count} user(s)</span>";
+        <tr data-poc-id="@poc.Id">
+            <td>@poc.Name</td>
+            <td><a href="@poc.Url" target="_blank" rel="noopener">@poc.Url</a></td>
+            <td class="small text-muted">@poc.Description</td>
+            <td>@Html.Raw(access)</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary edit-poc"
+                        data-poc='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(poc))'>Edit</button>
+                <button class="btn btn-sm btn-outline-danger delete-poc" data-id="@poc.Id">Delete</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<div class="modal fade" id="poc-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="poc-form">
+        <div class="modal-header">
+            <h5 class="modal-title" id="poc-modal-title">Add POC</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="poc-id" />
+
+            <div class="mb-3">
+                <label for="poc-name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="poc-name" required maxlength="120" />
+            </div>
+
+            <div class="mb-3">
+                <label for="poc-url" class="form-label">URL</label>
+                <input type="url" class="form-control" id="poc-url" required maxlength="2048" />
+            </div>
+
+            <div class="mb-3">
+                <label for="poc-description" class="form-label">Description</label>
+                <textarea class="form-control" id="poc-description" rows="3" maxlength="2000"></textarea>
+                @if (aiEnabled)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="generate-ai">
+                        ✨ Generate with AI
+                    </button>
+                    <span class="small text-muted ms-2" id="ai-status"></span>
+                }
+            </div>
+
+            <div class="mb-2">
+                <strong>Who can see this POC:</strong>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="allow-all-viewers" />
+                <label class="form-check-label" for="allow-all-viewers">
+                    <strong>All viewers</strong> (everyone with landing-page access)
+                </label>
+            </div>
+            <hr/>
+            <div class="mb-2">
+                <input type="search" class="form-control form-control-sm" id="user-search" placeholder="Search users…" />
+            </div>
+            <div id="user-list" style="max-height: 240px; overflow-y: auto;">
+                @foreach (var guest in guests.OrderBy(g => g.DisplayName))
+                {
+                    <div class="form-check user-row" data-email="@guest.Email" data-display="@guest.DisplayName">
+                        <input class="form-check-input poc-user" type="checkbox" id="user-@guest.Id" value="@guest.Email" />
+                        <label class="form-check-label" for="user-@guest.Id">
+                            <strong>@guest.DisplayName</strong>
+                            <span class="text-muted small">@guest.Email</span>
+                        </label>
+                    </div>
+                }
+            </div>
+            <div id="unresolved-warning" class="alert alert-warning mt-3 d-none"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="save-poc">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/pocs-admin.js" asp-append-version="true"></script>
+}

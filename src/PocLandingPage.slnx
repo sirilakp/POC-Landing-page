@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PocLandingPage.Tests/PocLandingPage.Tests.csproj" />
+  <Project Path="PocLandingPage.Web/PocLandingPage.Web.csproj" />
+</Solution>

@@ -1,6 +1,7 @@
 @{
     var isAdmin = User.IsInRole(Roles.Admin);
     var role = isAdmin ? "POC Admin" : (User.IsInRole(Roles.Viewer) ? "POC Viewer" : "");
+    var isLocalDevAuth = string.Equals(User.Identity?.AuthenticationType, "LocalDevAuth", StringComparison.Ordinal);
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -44,9 +45,12 @@
                         <li class="nav-item d-flex align-items-center me-2 small text-muted">
                             @User.Identity.Name
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
-                        </li>
+                        if (!isLocalDevAuth)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                            </li>
+                        }
                     }
                 </ul>
             </div>

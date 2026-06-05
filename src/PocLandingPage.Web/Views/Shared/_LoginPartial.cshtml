@@ -1,7 +1,17 @@
 ﻿@using System.Security.Principal
+@inject IConfiguration Configuration
+@inject IWebHostEnvironment Environment
+
+@{
+    var isLocalDevAuth = string.Equals(User.Identity?.AuthenticationType, "LocalDevAuth", StringComparison.Ordinal);
+}
 
 <ul class="navbar-nav">
-@if (User.Identity?.IsAuthenticated == true)
+@if (isLocalDevAuth)
+{
+        <span class="navbar-text text-dark">Local development mode</span>
+}
+else if (User.Identity?.IsAuthenticated == true)
 {
         <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
         <li class="nav-item">

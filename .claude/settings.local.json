@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(dotnet --version)",
-      "Bash(dotnet --list-sdks)"
+      "Bash(dotnet --list-sdks)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git worktree *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(dotnet add *)",
+      "Bash(dotnet list *)",
+      "Bash(dotnet remove *)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet test *)",
+      "Bash(gh pr *)",
+      "Bash(pwsh -NoProfile -Command \"Get-Command -Syntax src/deployment/deploy.ps1; Get-Command -Syntax src/deployment/Grant-GraphPermissions.ps1\")"
     ]
   }
 }

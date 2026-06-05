@@ -169,8 +169,7 @@ if (Test-AzExists group show --name $ResourceGroup) {
 
 # ---------- Storage Account ----------
 Write-Step "Storage account: $storageName"
-$storage = Get-AzJson storage account show --name $storageName --resource-group $ResourceGroup 2>$null
-if (-not $storage) {
+if (-not (Test-AzExists storage account show --name $storageName --resource-group $ResourceGroup)) {
     Invoke-Az storage account create `
         --name $storageName `
         --resource-group $ResourceGroup `
@@ -309,7 +308,7 @@ if (-not $SkipOpenAI) {
                 --model-name $openAiDeployment `
                 --model-version "2024-07-18" `
                 --model-format OpenAI `
-                --sku-name "Standard" `
+                --sku-name "GlobalStandard" `
                 --sku-capacity 10 | Out-Null
             Write-Host "  created"
         } else {

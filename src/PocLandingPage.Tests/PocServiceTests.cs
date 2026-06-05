@@ -97,6 +97,34 @@ public class PocServiceTests
     }
 
     [Fact]
+    public async Task ReorderAsync_reverses_order_when_given_full_set()
+    {
+        var svc = new PocService(new InMemoryBlobStore());
+        var a = await svc.AddAsync(new PocEntry { Name = "A", Url = "https://a.example.com" });
+        var b = await svc.AddAsync(new PocEntry { Name = "B", Url = "https://b.example.com" });
+        var c = await svc.AddAsync(new PocEntry { Name = "C", Url = "https://c.example.com" });
+
+        var ok = await svc.ReorderAsync(new[] { c.Id, a.Id, b.Id });
+
+        ok.Should().BeTrue();
+        (await svc.GetAllAsync()).Select(p => p.Name).Should().ContainInOrder("C", "A", "B");
+    }
+
+    [Fact]
+    public async Task ReorderAsync_rejects_request_that_does_not_match_current_set()
+    {
+        var svc = new PocService(new InMemoryBlobStore());
+        var a = await svc.AddAsync(new PocEntry { Name = "A", Url = "https://a.example.com" });
+        var b = await svc.AddAsync(new PocEntry { Name = "B", Url = "https://b.example.com" });
+
+        // Missing one id, plus an unknown one.
+        var ok = await svc.ReorderAsync(new[] { a.Id, Guid.NewGuid() });
+
+        ok.Should().BeFalse();
+        (await svc.GetAllAsync()).Select(p => p.Name).Should().ContainInOrder("A", "B");
+    }
+
+    [Fact]
     public async Task Mutation_retries_on_concurrent_write_then_succeeds()
     {
         var store = new ConcurrentRetryBlobStore();

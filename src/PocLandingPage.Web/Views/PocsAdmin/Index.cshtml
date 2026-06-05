@@ -13,9 +13,12 @@
     </button>
 </div>
 
-<table class="table table-striped">
+<p class="small text-muted">The order below is the order POCs appear on the display page. Use the arrows to reorder.</p>
+
+<table class="table table-striped" id="poc-table">
     <thead>
         <tr>
+            <th style="width:1%"></th>
             <th>Name</th>
             <th>URL</th>
             <th>Description</th>
@@ -30,6 +33,12 @@
             ? "<span class='badge bg-success'>All viewers</span>"
             : $"<span class='badge bg-secondary'>{poc.AllowedUserIds.Count} user(s)</span>";
         <tr data-poc-id="@poc.Id">
+            <td class="text-nowrap">
+                <div class="btn-group-vertical btn-group-sm" aria-label="Reorder">
+                    <button class="btn btn-outline-secondary move-up" title="Move up" aria-label="Move up">▲</button>
+                    <button class="btn btn-outline-secondary move-down" title="Move down" aria-label="Move down">▼</button>
+                </div>
+            </td>
             <td>@poc.Name</td>
             <td><a href="@poc.Url" target="_blank" rel="noopener">@poc.Url</a></td>
             <td class="small text-muted">@poc.Description</td>
@@ -43,6 +52,7 @@
     }
     </tbody>
 </table>
+<div id="reorder-status" class="small text-muted"></div>
 
 <div class="modal fade" id="poc-modal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">

@@ -123,6 +123,74 @@
         }
     });
 
+    // --- Reordering ---
+    const tableBody = document.querySelector('#poc-table tbody');
+    const reorderStatus = document.getElementById('reorder-status');
+
+    function currentOrder() {
+        return Array.from(tableBody.querySelectorAll('tr[data-poc-id]'))
+            .map(tr => tr.getAttribute('data-poc-id'));
+    }
+
+    function refreshMoveButtons() {
+        const rows = Array.from(tableBody.querySelectorAll('tr[data-poc-id]'));
+        rows.forEach((tr, i) => {
+            const up = tr.querySelector('.move-up');
+            const down = tr.querySelector('.move-down');
+            if (up) up.disabled = i === 0;
+            if (down) down.disabled = i === rows.length - 1;
+        });
+    }
+
+    async function persistOrder(previousHtml) {
+        reorderStatus.textContent = 'Saving order…';
+        try {
+            const resp = await fetch('/api/pocs/reorder', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderedIds: currentOrder() }),
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            reorderStatus.textContent = 'Order saved.';
+            setTimeout(() => { reorderStatus.textContent = ''; }, 1500);
+        } catch (err) {
+            // Roll back the DOM so what's shown matches what's stored.
+            tableBody.innerHTML = previousHtml;
+            wireReorderButtons();
+            refreshMoveButtons();
+            reorderStatus.textContent = "Couldn't save the new order. Please refresh and try again.";
+        }
+    }
+
+    function move(tr, direction) {
+        const previousHtml = tableBody.innerHTML;
+        if (direction === 'up') {
+            const prev = tr.previousElementSibling;
+            if (!prev) return;
+            tableBody.insertBefore(tr, prev);
+        } else {
+            const next = tr.nextElementSibling;
+            if (!next) return;
+            tableBody.insertBefore(next, tr);
+        }
+        refreshMoveButtons();
+        persistOrder(previousHtml);
+    }
+
+    function wireReorderButtons() {
+        tableBody.querySelectorAll('.move-up').forEach(btn => {
+            btn.addEventListener('click', () => move(btn.closest('tr'), 'up'));
+        });
+        tableBody.querySelectorAll('.move-down').forEach(btn => {
+            btn.addEventListener('click', () => move(btn.closest('tr'), 'down'));
+        });
+    }
+
+    if (tableBody) {
+        wireReorderButtons();
+        refreshMoveButtons();
+    }
+
     if (aiBtn) {
         aiBtn.addEventListener('click', async () => {
             if (!nameEl.value) {

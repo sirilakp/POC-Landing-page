@@ -91,6 +91,17 @@ public class PocsController : ControllerBase
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct) =>
         await _pocs.DeleteAsync(id, ct) ? NoContent() : NotFound();
 
+    [HttpPut("reorder")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> Reorder(ReorderPocsRequest req, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var ok = await _pocs.ReorderAsync(req.OrderedIds, ct);
+        if (!ok) return Problem("Reorder request did not match the current POC list. Refresh and try again.", statusCode: 409);
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}/access")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAccess(Guid id, CancellationToken ct)

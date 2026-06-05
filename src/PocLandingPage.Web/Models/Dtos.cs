@@ -47,6 +47,12 @@ public class SetAccessRequest
     public List<string> AllowedEmails { get; set; } = new();
 }
 
+public class ReorderPocsRequest
+{
+    [Required]
+    public List<Guid> OrderedIds { get; set; } = new();
+}
+
 public class AccessView
 {
     public bool AllowAllViewers { get; set; }

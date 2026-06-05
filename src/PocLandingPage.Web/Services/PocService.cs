@@ -60,6 +60,22 @@ public class PocService : IPocService
             return true;
         }, ct);
 
+    public Task<bool> ReorderAsync(IReadOnlyList<Guid> orderedIds, CancellationToken ct = default) =>
+        MutateAsync(list =>
+        {
+            // Only accept a reorder that references exactly the current set of POCs,
+            // so a stale/partial request can't drop or duplicate entries.
+            var current = list.Select(p => p.Id).ToHashSet();
+            if (orderedIds.Count != current.Count || !orderedIds.ToHashSet().SetEquals(current))
+                return false;
+
+            var byId = list.ToDictionary(p => p.Id);
+            list.Clear();
+            foreach (var id in orderedIds)
+                list.Add(byId[id]);
+            return true;
+        }, ct);
+
     private async Task<T> MutateAsync<T>(Func<List<PocEntry>, T> mutate, CancellationToken ct)
     {
         for (var attempt = 0; attempt < MaxRetries; attempt++)

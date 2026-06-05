@@ -10,4 +10,5 @@ public interface IPocService
     Task<PocEntry> AddAsync(PocEntry entry, CancellationToken ct = default);
     Task<PocEntry?> UpdateAsync(Guid id, Action<PocEntry> mutate, CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
+    Task<bool> ReorderAsync(IReadOnlyList<Guid> orderedIds, CancellationToken ct = default);
 }

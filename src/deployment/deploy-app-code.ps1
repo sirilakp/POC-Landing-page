@@ -55,12 +55,12 @@
 .EXAMPLE
   ./deploy-app-code.ps1 -ResourceGroup rg-poc-landing-page -AppName pocland-app -SkipBuild
 #>
-[CmdletBinding(DefaultParameterSetName = "ByPrefix")]
+[CmdletBinding(DefaultParameterSetName = "ByName")]
 param(
-    [Parameter(Mandatory = $true)][string]$ResourceGroup,
-    [Parameter(Mandatory = $true, ParameterSetName = "ByPrefix")]
+    [string]$ResourceGroup = "rg-poc-landing-page",
+    [Parameter(ParameterSetName = "ByPrefix")]
     [ValidatePattern('^[a-z][a-z0-9]{2,11}$')][string]$NamePrefix,
-    [Parameter(Mandatory = $true, ParameterSetName = "ByName")][string]$AppName,
+    [Parameter(ParameterSetName = "ByName")][string]$AppName = "poclanding-app",
     [string]$WebProjectPath = (Join-Path $PSScriptRoot "../PocLandingPage.Web/PocLandingPage.Web.csproj"),
     [string]$Configuration = "Release",
     [string]$OutputPath = (Join-Path $PSScriptRoot "../../publish-out"),

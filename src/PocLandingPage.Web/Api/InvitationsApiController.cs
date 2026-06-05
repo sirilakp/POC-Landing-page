@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Graph.Models.ODataErrors;
 using PocLandingPage.Web.Models;
 using PocLandingPage.Web.Services;
 
@@ -22,7 +23,20 @@ public class InvitationsApiController : ControllerBase
     public async Task<IActionResult> Invite(InviteUserRequest req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
-        await _svc.InviteUserAsync(req.Email, req.Role, ct);
+        try
+        {
+            await _svc.InviteUserAsync(req.Email, req.Role, ct);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Domain-level guard (e.g. internal user, missing role) — show the message as-is.
+            return BadRequest(ex.Message);
+        }
+        catch (ODataError ex)
+        {
+            // Surface the real Graph failure instead of a generic 500 HTML page.
+            return BadRequest(ex.Error?.Message ?? "Microsoft Graph rejected the invitation.");
+        }
         return Ok(new { message = $"Invitation sent to {req.Email}" });
     }
 

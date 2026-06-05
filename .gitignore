@@ -1,0 +1,17 @@
+# Build / publish output
+publish-out/
+publish.zip
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+
+# .NET user secrets / local config
+*.user
+
+# IDE / OS
+.vs/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

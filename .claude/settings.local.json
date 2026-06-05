@@ -15,7 +15,8 @@
       "Bash(dotnet build *)",
       "Bash(dotnet test *)",
       "Bash(gh pr *)",
-      "Bash(pwsh -NoProfile -Command \"Get-Command -Syntax src/deployment/deploy.ps1; Get-Command -Syntax src/deployment/Grant-GraphPermissions.ps1\")"
+      "Bash(pwsh -NoProfile -Command \"Get-Command -Syntax src/deployment/provision-azure-infra.ps1; Get-Command -Syntax src/deployment/Grant-GraphPermissions.ps1\")",
+      "Bash(az ad *)"
     ]
   }
 }

@@ -314,3 +314,48 @@ a:hover { color: var(--pink-dark); }
 .btn:focus, .btn:active:focus {
   box-shadow: 0 0 0 0.2rem rgba(230, 0, 126, 0.25);
 }
+
+/* ─── BOOTSTRAP BUTTON OVERRIDES (magenta theme) ─────────────
+   Admin pages use stock Bootstrap button classes; remap the
+   blue/red defaults onto the Inholland pink palette so every
+   action button matches the design system. */
+.btn-primary {
+  --bs-btn-bg: var(--pink);
+  --bs-btn-border-color: var(--pink);
+  --bs-btn-hover-bg: var(--pink-dark);
+  --bs-btn-hover-border-color: var(--pink-dark);
+  --bs-btn-active-bg: var(--pink-dark);
+  --bs-btn-active-border-color: var(--pink-dark);
+  --bs-btn-disabled-bg: var(--pink-light);
+  --bs-btn-disabled-border-color: var(--pink-light);
+}
+
+/* Edit / Delete row actions — solid magenta, white text, on one line */
+.btn-outline-primary,
+.btn-outline-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--pink);
+  --bs-btn-border-color: var(--pink);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--pink-dark);
+  --bs-btn-hover-border-color: var(--pink-dark);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--pink-dark);
+  --bs-btn-active-border-color: var(--pink-dark);
+}
+
+/* Delete / Revoke read as destructive but still on-brand: outlined */
+.btn-outline-danger {
+  --bs-btn-color: var(--pink-dark);
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--pink);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--pink-dark);
+  --bs-btn-hover-border-color: var(--pink-dark);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--pink-dark);
+  --bs-btn-active-border-color: var(--pink-dark);
+}
+
+/* Keep paired row buttons side-by-side and tidily spaced */
+td.text-end .btn + .btn { margin-left: 6px; }

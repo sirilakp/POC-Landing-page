@@ -1,7 +1,11 @@
 # Deployment scripts
 
-Provisions every Azure resource the app needs and writes its config — both
-into the Azure App Service and into `dotnet user-secrets` for local dev.
+Two scripts, run in order:
+
+1. **`provision-azure-infra.ps1`** — creates every Azure resource the app needs
+   and writes its config (App Service settings + `dotnet user-secrets`). Run once.
+2. **`deploy-app-code.ps1`** — builds the .NET app and pushes the compiled code
+   to the App Service. Run on every code change you want to ship.
 
 The scripts are **idempotent**: each step uses "create if not exists"
 semantics, so you can re-run after fixing a parameter or a transient
@@ -29,7 +33,7 @@ failure.
 cd src/deployment
 
 # Provision Azure resources + write user-secrets for local dev
-./deploy.ps1 `
+./provision-azure-infra.ps1 `
     -ResourceGroup rg-poc-landing-page `
     -Location westeurope `
     -NamePrefix pocland `
@@ -39,11 +43,15 @@ cd src/deployment
     -ClientSecret <client-secret>
 
 # One-time: grant the Managed Identity its Graph permissions.
-# The MIObjectId is printed by deploy.ps1 ("MI principalId: ...").
+# The MIObjectId is printed by provision-azure-infra.ps1 ("MI principalId: ...").
 ./Grant-GraphPermissions.ps1 -MIObjectId <mi-object-id>
+
+# Build and deploy the application code to the App Service.
+# Re-run this whenever you want to ship new code.
+./deploy-app-code.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland
 ```
 
-## What `deploy.ps1` creates
+## What `provision-azure-infra.ps1` creates
 
 | # | Resource                  | Why |
 |---|---------------------------|-----|
@@ -76,7 +84,7 @@ It also runs `dotnet user-secrets set ...` so the project runs locally with the 
 
 ## What you still have to do by hand
 
-`deploy.ps1` cannot do these — they need a human in the Portal:
+`provision-azure-infra.ps1` cannot do these — they need a human in the Portal:
 
 1. **Add the prod redirect URI** to the App Registration. The script prints the exact URL and an `az ad app update` command you can run instead of clicking.
 2. **`Grant-GraphPermissions.ps1`** — see above.
@@ -84,6 +92,52 @@ It also runs `dotnet user-secrets set ...` so the project runs locally with the 
    *Enterprise Applications → poc-landing-page → Users and groups*.
 
 After those three, browse to `https://<your-app>.azurewebsites.net` and sign in.
+
+## Deploying the app code with `deploy-app-code.ps1`
+
+`provision-azure-infra.ps1` creates the empty App Service; `deploy-app-code.ps1`
+builds the .NET app and pushes the compiled output to it. Run it after the infra
+exists, and again on every code change you want to ship.
+
+```powershell
+cd src/deployment
+./deploy-app-code.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland
+```
+
+What it does:
+
+| # | Step | Detail |
+|---|------|--------|
+| 1 | Preflight | Verifies `az`/`dotnet`, `az login`, and that the Web App exists |
+| 2 | Publish | `dotnet publish -c Release` into a clean `publish-out/` folder |
+| 3 | Package | Zips the output with forward-slash paths (required by Linux Kudu) |
+| 4 | Deploy | `az webapp deploy --type zip` to the Web App |
+| 5 | Verify | Optional HTTP smoke check of the app's hostname |
+
+### Deploy parameters
+
+| Parameter         | Required | Notes |
+|-------------------|----------|-------|
+| `-ResourceGroup`  | yes      | Resource group containing the Web App |
+| `-NamePrefix`     | yes\*    | Web App name is derived as `<NamePrefix>-app` |
+| `-AppName`        | yes\*    | Explicit Web App name — use instead of `-NamePrefix` |
+| `-Configuration`  | no       | Build configuration. Default `Release` |
+| `-WebProjectPath` | no       | Override path to the Web `.csproj` |
+| `-OutputPath`     | no       | Publish output folder. Default `publish-out/`. Cleaned each run |
+| `-SkipBuild`      | no       | Reuse the existing publish output (re-deploy the same build) |
+| `-NoVerify`       | no       | Skip the post-deploy smoke check |
+
+\* Pass **either** `-NamePrefix` **or** `-AppName`, not both.
+
+Examples:
+
+```powershell
+# Standard build + deploy
+./deploy-app-code.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland
+
+# Re-deploy the last build without rebuilding
+./deploy-app-code.ps1 -ResourceGroup rg-poc-landing-page -AppName pocland-app -SkipBuild
+```
 
 ## Re-running safely
 

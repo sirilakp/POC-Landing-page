@@ -34,7 +34,7 @@
             <td><a href="@poc.Url" target="_blank" rel="noopener">@poc.Url</a></td>
             <td class="small text-muted">@poc.Description</td>
             <td>@Html.Raw(access)</td>
-            <td class="text-end">
+            <td class="text-end text-nowrap">
                 <button class="btn btn-sm btn-outline-primary edit-poc"
                         data-poc='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(poc))'>Edit</button>
                 <button class="btn btn-sm btn-outline-danger delete-poc" data-id="@poc.Id">Delete</button>

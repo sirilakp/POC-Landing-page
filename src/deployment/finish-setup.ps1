@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-  Completes the App Service application settings that deploy.ps1 didn't reach
+  Completes the App Service application settings that provision-azure-infra.ps1 didn't reach
   because of the gpt-4o-mini deployment failure.
 #>
 $ErrorActionPreference = "Stop"

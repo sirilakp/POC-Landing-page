@@ -55,11 +55,11 @@
   Path to the Web .csproj (for `dotnet user-secrets`). Default: ../PocLandingPage.Web/PocLandingPage.Web.csproj
 
 .EXAMPLE
-  ./deploy.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland `
+  ./provision-azure-infra.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland `
                -TenantId <tid> -ClientId <cid> -ServicePrincipalId <spid>
 
 .EXAMPLE
-  ./deploy.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland `
+  ./provision-azure-infra.ps1 -ResourceGroup rg-poc-landing-page -NamePrefix pocland `
                -TenantId <tid> -ClientId <cid> -ServicePrincipalId <spid> `
                -ClientSecret <secret> -SkipOpenAI
 #>

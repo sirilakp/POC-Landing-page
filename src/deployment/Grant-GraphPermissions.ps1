@@ -4,16 +4,16 @@
   permissions required by InvitationService.
 
 .DESCRIPTION
-  This is the one step in deploy.ps1 that cannot be done with `az` alone
+  This is the one step in provision-azure-infra.ps1 that cannot be done with `az` alone
   — it needs Microsoft.Graph PowerShell because app-role-assignment for
   Managed Identities goes through Graph's /servicePrincipals API.
 
-  Run once after deploy.ps1 has created the Web App + MI.
+  Run once after provision-azure-infra.ps1 has created the Web App + MI.
 
   Idempotent: existing assignments are left alone.
 
 .PARAMETER MIObjectId
-  Object ID of the App Service Managed Identity (printed by deploy.ps1).
+  Object ID of the App Service Managed Identity (printed by provision-azure-infra.ps1).
 
 .EXAMPLE
   ./Grant-GraphPermissions.ps1 -MIObjectId 00000000-0000-0000-0000-000000000000

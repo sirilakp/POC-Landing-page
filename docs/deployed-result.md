@@ -21,7 +21,7 @@
 | Redirect URI added to App Registration | ✅ Done | Both localhost + prod |
 | Grant Graph permissions to Managed Identity | ❌ Blocked | See blocker below |
 | Assign POC.Admin to Sirilak.Pompan@INHOLLAND.nl | ⏳ Pending | Do after Graph permissions |
-| Deploy app code to App Service | ⏳ Pending | Do last |
+| Deploy app code to App Service | ✅ Done | Deployed via `deploy-app-code.ps1`; smoke check returned HTTP 200 |
 
 ---
 
@@ -151,22 +151,30 @@ The app uses Entra App Roles for access control. The first admin user needs the 
 
 Note: `Sirilak.Pompan@INHOLLAND.nl` is from the production tenant (`inholland.nl`). They log in as a B2B guest. If they haven't been invited yet, either invite them through the app's Manage Users page once the app is running, or invite manually via Portal → External Identities first.
 
-### Step 3 — Deploy the app code
-Once Graph permissions are in place, deploy the application:
+### Step 3 — Deploy the app code ✅ Done
+
+Deployed via the `deploy-app-code.ps1` script, which builds, packages, and pushes
+the code to the App Service in one step:
+
 ```powershell
-cd "C:\Inholland\POCs\POC Landing page\src"
-dotnet publish PocLandingPage.Web/PocLandingPage.Web.csproj -c Release -o ./publish
-az webapp deploy --name "poclanding-app" --resource-group "rg-poc-landing-page" --src-path ./publish --type zip
+cd "C:\Inholland\POCs\POC Landing page\src\deployment"
+pwsh -NoProfile -ExecutionPolicy Bypass -File ".\deploy-app-code.ps1" `
+    -ResourceGroup "rg-poc-landing-page" `
+    -NamePrefix "poclanding"
 ```
+
+Re-run this command whenever you want to ship new code. See
+[`src/deployment/README.md`](../src/deployment/README.md#deploying-the-app-code-with-deploy-app-codeps1)
+for all parameters (e.g. `-SkipBuild` to re-deploy the last build).
 
 ### Step 4 — Clean up orphan client secret
 Azure Portal → App Registrations → `poc-landing-page` → Certificates & secrets → delete the orphan secret.
 
 ### Step 5 — Local development setup (optional)
-To run the app locally, re-run `deploy.ps1` with `-Mode dev` to write all secrets to `dotnet user-secrets`:
+To run the app locally, re-run `provision-azure-infra.ps1` with `-Mode dev` to write all secrets to `dotnet user-secrets`:
 ```powershell
 cd "C:\Inholland\POCs\POC Landing page\src\deployment"
-pwsh -NoProfile -ExecutionPolicy Bypass -File ".\deploy.ps1" `
+pwsh -NoProfile -ExecutionPolicy Bypass -File ".\provision-azure-infra.ps1" `
     -ResourceGroup "rg-poc-landing-page" `
     -Location "westeurope" `
     -NamePrefix "poclanding" `

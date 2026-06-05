@@ -5,7 +5,7 @@
   permissions required by InvitationService — using az rest (no PS module needed).
 
 .PARAMETER MIObjectId
-  Object ID of the App Service Managed Identity (printed by deploy.ps1).
+  Object ID of the App Service Managed Identity (printed by provision-azure-infra.ps1).
 
 .EXAMPLE
   ./Grant-GraphPermissions-AzCli.ps1 -MIObjectId 00000000-0000-0000-0000-000000000000

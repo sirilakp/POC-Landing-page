@@ -16,7 +16,7 @@ public class DevelopmentBlobStore : IBlobStore
         {
             if (_content is null)
             {
-                var seed = JsonSerializer.SerializeToUtf8Bytes(new List<PocEntry>());
+                var seed = JsonSerializer.SerializeToUtf8Bytes(SeedPocs());
                 _content = seed;
                 _etag = "\"v1\"";
                 _version = 1;
@@ -42,6 +42,54 @@ public class DevelopmentBlobStore : IBlobStore
             return Task.FromResult(_etag);
         }
     }
+
+    // Demo POCs so the local dev landing page renders populated cards.
+    // Dev-only — never touches Azure. Edit/extend freely.
+    private static List<PocEntry> SeedPocs() => new()
+    {
+        new PocEntry
+        {
+            Name = "Inholland Chatbot",
+            Url = "https://zealous-hill-09cc78503.4.azurestaticapps.net/",
+            Description = "AI-powered chatbot with a live content scraper that indexes Inholland website content for intelligent Q&A.",
+            AllowAllViewers = true,
+        },
+        new PocEntry
+        {
+            Name = "Iris API Intelligence",
+            Url = "https://iris-api-intel-dev-web.azurewebsites.net/",
+            Description = "Documentation-grounded API assistant for Iris consumers. Explains endpoints, request/response behavior, and integration patterns in Dutch or English.",
+            AllowAllViewers = true,
+        },
+        new PocEntry
+        {
+            Name = "TeamTester Frontend",
+            Url = "https://teamtester-frontend.lemonrock-ed20e3b7.westeurope.azurecontainerapps.io",
+            Description = "React-based user interface for the TeamTester platform. Supports both admin and student roles with a clean, responsive UI.",
+            AllowAllViewers = true,
+        },
+        new PocEntry
+        {
+            Name = "BackendApi V3 Intelligence",
+            Url = "https://backend-api-v3-intel-dev-web.azurewebsites.net/",
+            Description = "Documentation-grounded API assistant for BackendApi V3. Explains OData endpoints, role-based access levels, entity properties, and integration patterns.",
+            AllowAllViewers = true,
+        },
+        new PocEntry
+        {
+            Name = "Agile Doc Discovery",
+            Url = "https://agile-app-j3zzpgsh3ba54.azurewebsites.net",
+            Description = "AI-powered RAG assistant that retrieves Agile documentation from Inholland SharePoint. Answers are strictly grounded in indexed content.",
+            AllowAllViewers = true,
+        },
+        new PocEntry
+        {
+            Name = "PII Filter Demo UI",
+            Url = "https://pii-filter-web.azurewebsites.net/Demo",
+            Description = "Interactive demo that strips PII from Dutch support messages and classifies them via Azure AI Language + GPT-4o before any text reaches a generative model.",
+            AllowAllViewers = true,
+        },
+    };
 }
 
 public class DevelopmentUserDirectoryService : IUserDirectoryService

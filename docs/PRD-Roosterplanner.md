@@ -429,7 +429,7 @@ A purpose-built, cloud-native platform that understands Dutch educational domain
 | FR-CP-002 | Schooljaar and periode definition: start/end dates, aantal weken, vakantieperioden, toetsperioden | Must Have |
 | FR-CP-003 | Module/vak catalog: naam, studiepunten/EC (ECTS), contacturen per week, jaar/semester, SBU (Studie Belasting Uren) | Must Have |
 | FR-CP-004 | Onderwijsgroep (klas) management: naam, opleiding, cohort (instroom jaar), track (voltijd/deeltijd/duaal), max groepsgrootte, docent-coach | Must Have |
-| FR-CP-005 | Keuzedeel management (MBO-specific): keuzedeel code (CK code), naam, sector, koppelingen aan kwalificatiedossiers | Must Have |
+| FR-CP-005 | Keuzedeel management (MBO-specific): keuzedeel code (CK code), naam, sector, koppelingen aan kwalificatiePOCs | Must Have |
 | FR-CP-006 | BPV-blok planning: student-level BPV periods with bedrijf, begindatum, einddatum, BPV-begeleider | Must Have |
 | FR-CP-007 | Contacturen tracking: scheduled vs. required contacturen per vak per periode, with compliance indicator | Must Have |
 | FR-CP-008 | SWV (taakbelasting) tracking for docenten: ingeroosterde uren vs. norm per periode | Should Have |

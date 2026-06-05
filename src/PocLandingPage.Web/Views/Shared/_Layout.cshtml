@@ -8,49 +8,59 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - POC Landing Page</title>
+    <title>@ViewData["Title"] - Inholland POC Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+@{
+    var userName = User.Identity?.Name ?? "";
+    var initial = string.IsNullOrEmpty(userName) ? "?" : userName.TrimStart().Substring(0, 1).ToUpperInvariant();
+}
 <header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom shadow-sm mb-3">
+    <nav class="navbar navbar-expand-md poc-nav">
         <div class="container-fluid">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">POC Landing Page</a>
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-logo">inh</span>
+                <span>POC Portal</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
+            <div class="navbar-collapse collapse d-md-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1 ms-md-3">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
+                        <a class="nav-link active" asp-controller="Home" asp-action="Index">POCs</a>
                     </li>
                     @if (isAdmin)
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/admin/pocs">Manage POCs</a>
+                            <a class="nav-link" href="/admin/pocs">Manage POCs</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/admin/invitations">Manage Users</a>
+                            <a class="nav-link" href="/admin/invitations">Manage Users</a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-md-center gap-2">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <li class="nav-item d-flex align-items-center me-2">
-                            <span class="badge bg-@(isAdmin ? "danger" : "primary")">@role</span>
+                        <li class="nav-item">
+                            <span class="role-badge">@role</span>
                         </li>
-                        <li class="nav-item d-flex align-items-center me-2 small text-muted">
-                            @User.Identity.Name
+                        <li class="nav-item d-none d-md-block user-name">
+                            @userName
                         </li>
                         if (!isLocalDevAuth)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                                <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
                             </li>
                         }
+                        <li class="nav-item">
+                            <span class="avatar" title="@userName">@initial</span>
+                        </li>
                     }
                 </ul>
             </div>
@@ -63,9 +73,9 @@
     </main>
 </div>
 
-<footer class="border-top footer text-muted">
+<footer class="footer text-center">
     <div class="container">
-        &copy; @DateTime.UtcNow.Year - Inholland POC Landing Page
+        Built for <b>Inholland</b> &mdash; POC Portal &copy; @DateTime.UtcNow.Year
     </div>
 </footer>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

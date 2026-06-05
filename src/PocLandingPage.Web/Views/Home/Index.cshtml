@@ -4,38 +4,69 @@
     var isAdmin = User.IsInRole(Roles.Admin);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Available POCs</h1>
-    @if (isAdmin)
-    {
-        <a href="/admin/pocs" class="btn btn-primary btn-sm">Manage POCs</a>
-    }
+<nav class="poc-breadcrumb">
+    <a asp-controller="Home" asp-action="Index">Portal</a>
+    <span class="sep">›</span>
+    <span class="current">POCs</span>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="sec-title">Available POCs</span>
+            <span class="poc-count" id="pocCount">@Model.Count POC@(Model.Count == 1 ? "" : "s")</span>
+        </div>
+        <div class="sec-sub">All active Proof of Concept projects shared with you</div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (Model.Any())
+        {
+            <div class="poc-search">
+                <span class="search-ico">⌕</span>
+                <input type="text" id="pocSearch" placeholder="Search POCs…" autocomplete="off" aria-label="Search POCs" />
+            </div>
+        }
+        @if (isAdmin)
+        {
+            <a href="/admin/pocs" class="btn-poc btn-poc-primary">Manage POCs</a>
+        }
+    </div>
 </div>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">
+    <div class="poc-empty">
+        <div class="empty-ico">📁</div>
         @if (isAdmin)
         {
-            <span>No POCs yet. <a href="/admin/pocs">Add one</a>.</span>
+            <p class="mb-0">No POCs yet. <a href="/admin/pocs">Add one</a>.</p>
         }
         else
         {
-            <span>No POCs have been shared with you yet. Contact an administrator if you expected access.</span>
+            <p class="mb-0">No POCs have been shared with you yet.<br />Contact an administrator if you expected access.</p>
         }
     </div>
 }
 else
 {
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+    <div class="poc-grid" id="pocGrid">
         @foreach (var poc in Model)
         {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@poc.Name</h5>
-                        <p class="card-text text-muted small flex-grow-1">@poc.Description</p>
-                        <a href="@poc.Url" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm align-self-start">
+            var initial = string.IsNullOrWhiteSpace(poc.Name) ? "?" : poc.Name.Trim().Substring(0, 1).ToUpperInvariant();
+            <div class="poc-card"
+                 data-name="@poc.Name.ToLowerInvariant()"
+                 data-desc="@poc.Description.ToLowerInvariant()">
+                <div class="card-top">
+                    <div class="c-icon">@initial</div>
+                </div>
+                <div class="card-body">
+                    <div class="c-name">@poc.Name</div>
+                    <div class="c-desc">@(string.IsNullOrWhiteSpace(poc.Description) ? "No description provided." : poc.Description)</div>
+                    <div class="tags">
+                        <span class="tag live">● Live</span>
+                    </div>
+                    <div>
+                        <a href="@poc.Url" target="_blank" rel="noopener" class="btn-poc btn-poc-primary">
                             Open POC →
                         </a>
                     </div>
@@ -43,4 +74,34 @@ else
             </div>
         }
     </div>
+    <div class="poc-empty" id="pocNoResults" style="display:none;">
+        <div class="empty-ico">⌕</div>
+        <p class="mb-0">No POCs match your search.</p>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var search = document.getElementById('pocSearch');
+            if (!search) return;
+            var cards = Array.prototype.slice.call(document.querySelectorAll('#pocGrid .poc-card'));
+            var count = document.getElementById('pocCount');
+            var noRes = document.getElementById('pocNoResults');
+
+            search.addEventListener('input', function () {
+                var q = search.value.trim().toLowerCase();
+                var visible = 0;
+                cards.forEach(function (c) {
+                    var match = !q ||
+                        c.dataset.name.indexOf(q) !== -1 ||
+                        c.dataset.desc.indexOf(q) !== -1;
+                    c.classList.toggle('hidden', !match);
+                    if (match) visible++;
+                });
+                count.textContent = visible + (visible === 1 ? ' POC' : ' POCs');
+                noRes.style.display = visible ? 'none' : 'block';
+            });
+        })();
+    </script>
 }

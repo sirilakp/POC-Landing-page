@@ -1,31 +1,316 @@
+/* ───────────────────────────────────────────────────────────
+   Inholland POC Portal — design system
+   Pink/dossier aesthetic: bright magenta nav, rounded white
+   cards, pill buttons, soft shadows.
+   ─────────────────────────────────────────────────────────── */
+
+:root {
+  --pink:        #E6007E;
+  --pink-dark:   #B5005F;
+  --pink-light:  #FF4DA6;
+  --navy:        #1B2A4A;
+  --bg:          #F4F5F7;
+  --white:       #FFFFFF;
+  --text:        #1B2A4A;
+  --muted:       #6B7280;
+  --border:      #E5E7EB;
+  --shadow:      0 2px 10px rgba(0, 0, 0, 0.07);
+  --shadow-hover:0 10px 28px rgba(230, 0, 126, 0.18);
+  --radius:      12px;
+}
+
 html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
+  font-size: 15px;
   position: relative;
   min-height: 100%;
 }
 
+@media (min-width: 768px) {
+  html { font-size: 16px; }
+}
+
 body {
-  margin-bottom: 60px;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 70px;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+a { color: var(--pink); text-decoration: none; }
+a:hover { color: var(--pink-dark); }
+
+/* ─── TOP NAVBAR ─────────────────────────────────────────── */
+.navbar.poc-nav {
+  background: var(--pink);
+  box-shadow: var(--shadow);
+  padding: 0 1.25rem;
+  min-height: 60px;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.poc-nav .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.poc-nav .brand-logo {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.poc-nav .nav-link {
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-weight: 500;
+  border-radius: 50px;
+  padding: 6px 14px !important;
+  transition: background 0.2s, color 0.2s;
+}
+
+.poc-nav .nav-link:hover,
+.poc-nav .nav-link.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff !important;
+}
+
+.poc-nav .navbar-toggler { border-color: rgba(255, 255, 255, 0.4); }
+.poc-nav .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255,0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.poc-nav .role-badge {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--pink-dark);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 50px;
+}
+
+.poc-nav .user-name { color: rgba(255, 255, 255, 0.9); font-size: 0.85rem; }
+
+.poc-nav .avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ─── BREADCRUMB ─────────────────────────────────────────── */
+.poc-breadcrumb {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 1.25rem 0 0.5rem;
+}
+.poc-breadcrumb a { color: var(--muted); }
+.poc-breadcrumb a:hover { color: var(--pink); }
+.poc-breadcrumb .sep { margin: 0 8px; opacity: 0.5; }
+.poc-breadcrumb .current { color: var(--text); font-weight: 600; }
+
+/* ─── SECTION HEADER ─────────────────────────────────────── */
+.sec-title { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+.sec-sub   { font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+
+.poc-count {
+  background: var(--pink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 11px;
+  border-radius: 50px;
+}
+
+/* ─── SEARCH ─────────────────────────────────────────────── */
+.poc-search { position: relative; max-width: 360px; }
+.poc-search input {
+  width: 100%;
+  padding: 9px 16px 9px 38px;
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--white);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.poc-search input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px rgba(230, 0, 126, 0.1);
+}
+.poc-search .search-ico {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+/* ─── POC CARDS ──────────────────────────────────────────── */
+.poc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.poc-card {
+  background: var(--white);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  animation: cardIn 0.4s both;
+}
+.poc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+.poc-card.hidden { display: none; }
+
+.poc-card .card-top {
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(230, 0, 126, 0.12), rgba(181, 0, 95, 0.12));
+}
+.poc-card .c-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+  box-shadow: 0 8px 22px rgba(230, 0, 126, 0.28);
+}
+
+.poc-card .card-body {
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.poc-card .c-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.poc-card .c-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.poc-card .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
+.poc-card .tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 50px;
+  background: #F3F4F6;
+  color: var(--muted);
+}
+.poc-card .tag.live { background: #D1FAE5; color: #065F46; }
+
+/* ─── BUTTONS (pill style) ───────────────────────────────── */
+.btn-poc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+.btn-poc-primary { background: var(--pink); color: #fff; }
+.btn-poc-primary:hover { background: var(--pink-dark); color: #fff; box-shadow: 0 6px 16px rgba(230, 0, 126, 0.3); }
+.btn-poc-primary:active { transform: scale(0.98); }
+
+.btn-poc-outline {
+  background: #fff;
+  color: var(--pink);
+  border: 1.5px solid var(--border);
+}
+.btn-poc-outline:hover {
+  border-color: var(--pink);
+  color: var(--pink-dark);
+  background: rgba(230, 0, 126, 0.05);
+}
+
+/* ─── EMPTY / NO RESULTS ─────────────────────────────────── */
+.poc-empty {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 56px 32px;
+  text-align: center;
+  color: var(--muted);
+}
+.poc-empty .empty-ico {
+  font-size: 40px;
+  opacity: 0.3;
+  margin-bottom: 14px;
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  line-height: 60px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.footer b { color: var(--pink); }
+
+/* ─── CARD STAGGER ANIMATION ─────────────────────────────── */
+.poc-card:nth-child(1) { animation-delay: 0.04s; }
+.poc-card:nth-child(2) { animation-delay: 0.10s; }
+.poc-card:nth-child(3) { animation-delay: 0.16s; }
+.poc-card:nth-child(4) { animation-delay: 0.22s; }
+.poc-card:nth-child(5) { animation-delay: 0.28s; }
+.poc-card:nth-child(6) { animation-delay: 0.34s; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.btn:focus, .btn:active:focus {
+  box-shadow: 0 0 0 0.2rem rgba(230, 0, 126, 0.25);
 }

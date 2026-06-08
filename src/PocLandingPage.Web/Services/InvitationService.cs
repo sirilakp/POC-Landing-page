@@ -12,15 +12,18 @@ public class InvitationService : IInvitationService
     private readonly GraphServiceClient _graph;
     private readonly string _spId;
     private readonly string _redirectUrl;
+    private readonly ILogger<InvitationService> _logger;
 
     public InvitationService(
         GraphServiceClient graph,
         IOptions<AzureAdOptions> ad,
-        IConfiguration config)
+        IConfiguration config,
+        ILogger<InvitationService> logger)
     {
         _graph = graph;
         _spId = ad.Value.ServicePrincipalId;
         _redirectUrl = config["App:BaseUrl"] ?? "https://localhost";
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<GuestUser>> GetGuestsAsync(CancellationToken ct = default)
@@ -85,7 +88,7 @@ public class InvitationService : IInvitationService
         var existing = await FindExistingUserAsync(email, ct);
         if (existing is not null)
         {
-            await AssignRoleAsync(existing, role, ct);
+            await AssignRoleWithRetryAsync(existing, role, ct);
             return;
         }
 
@@ -120,8 +123,11 @@ public class InvitationService : IInvitationService
                 await AssignRoleAsync(userId, role, ct);
                 return;
             }
-            catch (ODataError ex) when (IsPrincipalNotReadyError(ex) && attempt < delays.Length)
+            catch (ODataError ex) when (attempt < delays.Length)
             {
+                _logger.LogWarning("AssignRole attempt {Attempt} failed — code={Code} message={Message}",
+                    attempt + 1, ex.Error?.Code, ex.Error?.Message);
+                if (!IsPrincipalNotReadyError(ex)) throw;
                 await Task.Delay(TimeSpan.FromSeconds(delays[attempt]), ct);
             }
         }

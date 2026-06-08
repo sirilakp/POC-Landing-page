@@ -263,6 +263,38 @@ $mi = Get-AzJson webapp identity assign --name $appName --resource-group $Resour
 $miPrincipalId = $mi.principalId
 Write-Host "  MI principalId: $miPrincipalId"
 
+# ---------- Graph permissions for the Managed Identity ----------
+Write-Step "Graph permissions for Managed Identity"
+$graphTokenJson = & az account get-access-token --resource "https://graph.microsoft.com" --output json 2>&1
+if ($LASTEXITCODE -eq 0) {
+    $graphToken = ($graphTokenJson | ConvertFrom-Json).accessToken
+    $graphHeaders = @{ "Authorization" = "Bearer $graphToken"; "Content-Type" = "application/json" }
+
+    $graphSpResp = Invoke-RestMethod -Method GET `
+        -Uri "https://graph.microsoft.com/v1.0/servicePrincipals?`$filter=appId eq '00000003-0000-0000-c000-000000000000'&`$select=id,appRoles" `
+        -Headers $graphHeaders
+    $graphSp   = $graphSpResp.value[0]
+    $graphSpId = $graphSp.id
+
+    $existingAssignments = (Invoke-RestMethod -Method GET `
+        -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$miPrincipalId/appRoleAssignments" `
+        -Headers $graphHeaders).value
+
+    foreach ($roleName in @("User.Invite.All", "User.Read.All", "AppRoleAssignment.ReadWrite.All", "Directory.Read.All")) {
+        $appRole = $graphSp.appRoles | Where-Object { $_.value -eq $roleName }
+        if (-not $appRole) { Write-Warning "  Graph role '$roleName' not found — skipping"; continue }
+        $already = $existingAssignments | Where-Object { $_.appRoleId -eq $appRole.id -and $_.resourceId -eq $graphSpId }
+        if ($already) { Write-Host "  $roleName : already granted" -ForegroundColor Yellow; continue }
+        $body = @{ principalId = $miPrincipalId; resourceId = $graphSpId; appRoleId = $appRole.id } | ConvertTo-Json -Compress
+        Invoke-RestMethod -Method POST `
+            -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$miPrincipalId/appRoleAssignments" `
+            -Headers $graphHeaders -Body $body | Out-Null
+        Write-Host "  $roleName : granted" -ForegroundColor Green
+    }
+} else {
+    Write-Warning "  Could not get Graph token — skipping Graph permissions. Run Grant-GraphPermissions-AzCli.ps1 -MIObjectId $miPrincipalId manually."
+}
+
 # ---------- Role assignments for the Managed Identity ----------
 Write-Step "RBAC: MI → Storage Blob Data Contributor"
 $storageScope = (Get-AzJson storage account show --name $storageName --resource-group $ResourceGroup).id
@@ -407,8 +439,6 @@ Write-Host "✓ All done." -ForegroundColor Green
 Write-Host ""
 Write-Host "Manual follow-up still required:" -ForegroundColor Yellow
 Write-Host "  1. Add prod redirect URI to App Registration (see message above)."
-Write-Host "  2. Grant the App Service Managed Identity the Microsoft Graph permissions"
-Write-Host "     (User.Invite.All, User.Read.All, AppRoleAssignment.ReadWrite.All, Directory.Read.All)."
-Write-Host "     See docs/manual-setup.md Phase 2a step 3."
-Write-Host "  3. Assign initial POC.Admin role to sirilak.pompan@inholland.nl in"
+Write-Host "  2. Assign initial POC.Admin role to sirilak.pompan@inholland.nl in"
 Write-Host "     Enterprise Applications → Users and groups."
+Write-Host "  (Graph permissions are granted automatically by this script.)"

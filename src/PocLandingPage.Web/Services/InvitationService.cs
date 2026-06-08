@@ -101,8 +101,9 @@ public class InvitationService : IInvitationService
     {
         // Internal tenant members cannot be B2B invited — Graph rejects it.
         // They already have access once added to the enterprise app in the portal.
+        // Guest users (PendingAcceptance) can be re-invited via the same endpoint.
         var existing = await FindExistingUserAsync(email, ct);
-        if (existing is not null)
+        if (existing is not null && existing.UserType == "Member")
             throw new InvalidOperationException($"{email} is already a member of this tenant. Assign their role directly in the Azure Portal under Enterprise Applications.");
 
         await _graph.Invitations.PostAsync(new Invitation
@@ -113,17 +114,17 @@ public class InvitationService : IInvitationService
         }, cancellationToken: ct);
     }
 
-    private async Task<string?> FindExistingUserAsync(string email, CancellationToken ct)
+    private async Task<User?> FindExistingUserAsync(string email, CancellationToken ct)
     {
         var escaped = email.Replace("'", "''");
         var result = await _graph.Users.GetAsync(req =>
         {
             req.QueryParameters.Filter =
                 $"mail eq '{escaped}' or userPrincipalName eq '{escaped}'";
-            req.QueryParameters.Select = new[] { "id" };
+            req.QueryParameters.Select = new[] { "id", "userType" };
             req.QueryParameters.Top = 1;
         }, ct);
 
-        return result?.Value?.FirstOrDefault()?.Id;
+        return result?.Value?.FirstOrDefault();
     }
 }

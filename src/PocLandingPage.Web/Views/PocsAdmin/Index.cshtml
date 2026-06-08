@@ -13,7 +13,17 @@
     </button>
 </div>
 
-<p class="small text-muted">The order below is the order POCs appear on the display page. Use the arrows to reorder.</p>
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <p class="small text-muted mb-0">The order below is the order POCs appear on the display page. Use the arrows to reorder.</p>
+    <div class="d-flex gap-2 align-items-center">
+        <input type="search" id="poc-search" class="form-control form-control-sm" placeholder="Search name or URL…" style="width:220px" />
+        <select id="poc-page-size" class="form-select form-select-sm" style="width:auto">
+            <option value="10" selected>10 / page</option>
+            <option value="25">25 / page</option>
+            <option value="50">50 / page</option>
+        </select>
+    </div>
+</div>
 
 <table class="table table-striped" id="poc-table">
     <thead>
@@ -32,7 +42,7 @@
         var access = poc.AllowAllViewers
             ? "<span class='badge bg-success'>All viewers</span>"
             : $"<span class='badge bg-secondary'>{poc.AllowedUserIds.Count} user(s)</span>";
-        <tr data-poc-id="@poc.Id">
+        <tr data-poc-id="@poc.Id" data-name="@poc.Name.ToLowerInvariant()" data-url="@poc.Url.ToLowerInvariant()">
             <td class="text-nowrap">
                 <div class="btn-group-vertical btn-group-sm" aria-label="Reorder">
                     <button class="btn btn-outline-secondary move-up" title="Move up" aria-label="Move up">▲</button>
@@ -52,7 +62,14 @@
     }
     </tbody>
 </table>
-<div id="reorder-status" class="small text-muted"></div>
+
+<div class="d-flex justify-content-between align-items-center mt-2">
+    <span id="poc-pagination-info" class="text-muted small"></span>
+    <nav>
+        <ul class="pagination pagination-sm mb-0" id="poc-pagination"></ul>
+    </nav>
+</div>
+<div id="reorder-status" class="small text-muted mt-1"></div>
 
 <div class="modal fade" id="poc-modal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">

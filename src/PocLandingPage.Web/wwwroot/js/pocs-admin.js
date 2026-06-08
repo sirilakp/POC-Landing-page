@@ -133,7 +133,7 @@
     }
 
     function refreshMoveButtons() {
-        const rows = Array.from(tableBody.querySelectorAll('tr[data-poc-id]'));
+        const rows = Array.from(tableBody.querySelectorAll('tr[data-poc-id]:not([hidden])'));
         rows.forEach((tr, i) => {
             const up = tr.querySelector('.move-up');
             const down = tr.querySelector('.move-down');
@@ -189,6 +189,110 @@
     if (tableBody) {
         wireReorderButtons();
         refreshMoveButtons();
+    }
+
+    // ── Table search + pagination ────────────────────────────────────────────
+    const pocSearchInput = document.getElementById('poc-search');
+    const pocPageSizeSelect = document.getElementById('poc-page-size');
+    const pocPaginationEl = document.getElementById('poc-pagination');
+    const pocInfoEl = document.getElementById('poc-pagination-info');
+
+    if (pocSearchInput && tableBody) {
+        const allPocRows = Array.from(tableBody.querySelectorAll('tr[data-poc-id]'));
+        let filteredPocRows = allPocRows.slice();
+        let pocCurrentPage = 1;
+
+        function applyPocFilter() {
+            const q = pocSearchInput.value.trim().toLowerCase();
+            filteredPocRows = allPocRows.filter(row =>
+                !q ||
+                (row.dataset.name || '').includes(q) ||
+                (row.dataset.url || '').includes(q)
+            );
+            pocCurrentPage = 1;
+            renderPoc();
+        }
+
+        function renderPoc() {
+            const pageSize = parseInt(pocPageSizeSelect.value, 10);
+            const totalPages = Math.max(1, Math.ceil(filteredPocRows.length / pageSize));
+            if (pocCurrentPage > totalPages) pocCurrentPage = totalPages;
+
+            const start = (pocCurrentPage - 1) * pageSize;
+            const visible = new Set(filteredPocRows.slice(start, start + pageSize));
+
+            allPocRows.forEach(row => { row.hidden = !visible.has(row); });
+
+            const from = filteredPocRows.length === 0 ? 0 : start + 1;
+            const to = Math.min(start + pageSize, filteredPocRows.length);
+            pocInfoEl.textContent = filteredPocRows.length === 0
+                ? 'No POCs found'
+                : `Showing ${from}–${to} of ${filteredPocRows.length} POC${filteredPocRows.length !== 1 ? 's' : ''}`;
+
+            pocPaginationEl.innerHTML = '';
+
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item' + (pocCurrentPage === 1 ? ' disabled' : '');
+            prevLi.innerHTML = '<a class="page-link" href="#">&laquo;</a>';
+            prevLi.querySelector('a').addEventListener('click', e => {
+                e.preventDefault();
+                if (pocCurrentPage > 1) { pocCurrentPage--; renderPoc(); }
+            });
+            pocPaginationEl.appendChild(prevLi);
+
+            const delta = 2;
+            const rangeStart = Math.max(1, pocCurrentPage - delta);
+            const rangeEnd = Math.min(totalPages, pocCurrentPage + delta);
+
+            if (rangeStart > 1) {
+                appendPocPageBtn(1, totalPages);
+                if (rangeStart > 2) appendPocEllipsis();
+            }
+            for (let p = rangeStart; p <= rangeEnd; p++) appendPocPageBtn(p, totalPages);
+            if (rangeEnd < totalPages) {
+                if (rangeEnd < totalPages - 1) appendPocEllipsis();
+                appendPocPageBtn(totalPages, totalPages);
+            }
+
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item' + (pocCurrentPage === totalPages ? ' disabled' : '');
+            nextLi.innerHTML = '<a class="page-link" href="#">&raquo;</a>';
+            nextLi.querySelector('a').addEventListener('click', e => {
+                e.preventDefault();
+                if (pocCurrentPage < totalPages) { pocCurrentPage++; renderPoc(); }
+            });
+            pocPaginationEl.appendChild(nextLi);
+
+            refreshMoveButtons();
+        }
+
+        function appendPocPageBtn(p, totalPages) {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (p === pocCurrentPage ? ' active' : '');
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = p;
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                pocCurrentPage = p;
+                renderPoc();
+            });
+            li.appendChild(a);
+            pocPaginationEl.appendChild(li);
+        }
+
+        function appendPocEllipsis() {
+            const li = document.createElement('li');
+            li.className = 'page-item disabled';
+            li.innerHTML = '<span class="page-link">…</span>';
+            pocPaginationEl.appendChild(li);
+        }
+
+        pocSearchInput.addEventListener('input', applyPocFilter);
+        pocPageSizeSelect.addEventListener('change', () => { pocCurrentPage = 1; renderPoc(); });
+
+        renderPoc();
     }
 
     if (aiBtn) {

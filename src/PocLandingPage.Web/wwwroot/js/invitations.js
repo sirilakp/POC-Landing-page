@@ -21,6 +21,29 @@
         }
     });
 
+    // ── Resend invite buttons ────────────────────────────────────────────────
+    document.querySelectorAll('.resend-invite').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const email = btn.getAttribute('data-email');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+            const resp = await fetch('/api/invitations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            if (resp.ok) {
+                btn.textContent = 'Sent';
+                btn.classList.replace('btn-outline-secondary', 'btn-outline-success');
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Resend Invite';
+                const text = await resp.text();
+                alert('Failed to resend: ' + text);
+            }
+        });
+    });
+
     // ── Search + pagination ──────────────────────────────────────────────────
     const tbody = document.querySelector('#users-table tbody');
     const allRows = Array.from(tbody.querySelectorAll('tr'));

@@ -1,6 +1,8 @@
 @model IReadOnlyList<GuestUser>
 @{
     ViewData["Title"] = "Manage Users";
+    var spId = ViewBag.ServicePrincipalId as string ?? "";
+    var portalUsersUrl = $"https://portal.azure.com/#view/Microsoft_AAD_IAM/ManagedAppMenuBlade/~/Users/objectId/{spId}/appId//defaultBlade/Overview";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -43,12 +45,14 @@
             <th>Type</th>
             <th>Role</th>
             <th>Status</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
     @foreach (var user in Model)
     {
-        <tr data-name="@user.DisplayName.ToLowerInvariant()" data-email="@user.Email.ToLowerInvariant()">
+        <tr data-name="@user.DisplayName.ToLowerInvariant()" data-email="@user.Email.ToLowerInvariant()"
+            data-invite-status="@user.InviteStatus" data-role="@user.Role" data-user-email="@user.Email">
             <td>@user.DisplayName</td>
             <td>@user.Email</td>
             <td>
@@ -71,7 +75,30 @@
                     <span>@user.Role</span>
                 }
             </td>
-            <td>@user.InviteStatus</td>
+            <td>
+                @if (user.InviteStatus == "PendingAcceptance")
+                {
+                    <span class="badge text-bg-warning text-dark">Invite Sent</span>
+                }
+                else if (user.InviteStatus == "Accepted" || user.InviteStatus == "Member")
+                {
+                    <span class="badge text-bg-success">@user.InviteStatus</span>
+                }
+                else
+                {
+                    @user.InviteStatus
+                }
+            </td>
+            <td class="text-nowrap">
+                @if (user.InviteStatus == "PendingAcceptance")
+                {
+                    <button class="btn btn-sm btn-outline-secondary resend-invite" data-email="@user.Email">Resend Invite</button>
+                }
+                else if (user.InviteStatus == "Accepted" && (user.Role == "Default access" || string.IsNullOrEmpty(user.Role)))
+                {
+                    <a href="@portalUsersUrl" target="_blank" rel="noopener" class="btn btn-sm btn-primary">Assign in Portal ↗</a>
+                }
+            </td>
         </tr>
     }
     </tbody>

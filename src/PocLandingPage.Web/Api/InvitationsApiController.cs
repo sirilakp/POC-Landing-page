@@ -25,33 +25,16 @@ public class InvitationsApiController : ControllerBase
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
         try
         {
-            await _svc.InviteUserAsync(req.Email, req.Role, ct);
+            await _svc.InviteUserAsync(req.Email, ct);
         }
         catch (InvalidOperationException ex)
         {
-            // Domain-level guard (e.g. internal user, missing role) — show the message as-is.
             return BadRequest(ex.Message);
         }
         catch (ODataError ex)
         {
-            // Surface the real Graph failure instead of a generic 500 HTML page.
             return BadRequest(ex.Error?.Message ?? "Microsoft Graph rejected the invitation.");
         }
-        return Ok(new { message = $"Invitation sent to {req.Email}" });
-    }
-
-    [HttpPut("{userId}/role")]
-    public async Task<IActionResult> UpdateRole(string userId, [FromBody] UpdateRoleRequest req, CancellationToken ct)
-    {
-        if (!ModelState.IsValid) return ValidationProblem(ModelState);
-        await _svc.UpdateRoleAsync(userId, req.Role, ct);
-        return NoContent();
-    }
-
-    [HttpDelete("{userId}")]
-    public async Task<IActionResult> Revoke(string userId, CancellationToken ct)
-    {
-        await _svc.RevokeAccessAsync(userId, ct);
-        return NoContent();
+        return Ok(new { message = $"Invitation sent to {req.Email}. Assign their role in the Azure Portal once they accept." });
     }
 }

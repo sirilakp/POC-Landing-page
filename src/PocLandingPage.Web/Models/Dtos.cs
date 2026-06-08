@@ -14,15 +14,6 @@ public class InviteUserRequest
 {
     [Required, EmailAddress]
     public string Email { get; set; } = "";
-
-    [Required]
-    public string Role { get; set; } = Roles.Viewer;
-}
-
-public class UpdateRoleRequest
-{
-    [Required]
-    public string Role { get; set; } = Roles.Viewer;
 }
 
 public class UpsertPocRequest

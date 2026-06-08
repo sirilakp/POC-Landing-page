@@ -11,61 +11,78 @@
     <div class="card-body">
         <h5 class="card-title">Invite a new user</h5>
         <form id="invite-form" class="row g-2">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <input type="email" class="form-control" id="invite-email" placeholder="user@inholland.nl" required />
             </div>
-            <div class="col-md-3">
-                <select class="form-select" id="invite-role">
-                    <option value="POC.Viewer" selected>POC Viewer</option>
-                    <option value="POC.Admin">POC Admin</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-grid">
+            <div class="col-md-4 d-grid">
                 <button type="submit" class="btn btn-primary">Send invitation</button>
             </div>
         </form>
         <div id="invite-status" class="mt-2 small"></div>
+        <p class="text-muted small mt-2 mb-0">After the user accepts the invitation, assign their role in the <a href="https://portal.azure.com" target="_blank">Azure Portal</a> under Enterprise Applications → Users and groups.</p>
     </div>
 </div>
 
-<h5>Current guests</h5>
-<table class="table table-striped">
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Current users</h5>
+    <div class="d-flex gap-2 align-items-center">
+        <input type="search" id="user-search" class="form-control form-control-sm" placeholder="Search name or email…" style="width:220px" />
+        <select id="page-size" class="form-select form-select-sm" style="width:auto">
+            <option value="10" selected>10 / page</option>
+            <option value="25">25 / page</option>
+            <option value="50">50 / page</option>
+        </select>
+    </div>
+</div>
+
+<table class="table table-striped" id="users-table">
     <thead>
         <tr>
             <th>Display name</th>
             <th>Email</th>
+            <th>Type</th>
             <th>Role</th>
-            <th>Invite status</th>
-            <th class="text-end">Actions</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var guest in Model)
+    @foreach (var user in Model)
     {
-        <tr data-user-id="@guest.Id">
-            <td>@guest.DisplayName</td>
-            <td>@guest.Email</td>
+        <tr data-name="@user.DisplayName.ToLowerInvariant()" data-email="@user.Email.ToLowerInvariant()">
+            <td>@user.DisplayName</td>
+            <td>@user.Email</td>
             <td>
-                @if (guest.Role == "Default access")
+                @if (user.IsExternal)
+                {
+                    <span class="badge text-bg-secondary">External</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-primary">Internal</span>
+                }
+            </td>
+            <td>
+                @if (user.Role == "Default access")
                 {
                     <span class="text-muted small">Default access</span>
                 }
                 else
                 {
-                    <select class="form-select form-select-sm role-select">
-                        <option value="POC.Viewer" selected="@(guest.Role == "POC.Viewer")">POC Viewer</option>
-                        <option value="POC.Admin" selected="@(guest.Role == "POC.Admin")">POC Admin</option>
-                    </select>
+                    <span>@user.Role</span>
                 }
             </td>
-            <td>@guest.InviteStatus</td>
-            <td class="text-end">
-                <button class="btn btn-sm btn-outline-danger revoke-user" data-id="@guest.Id">Revoke</button>
-            </td>
+            <td>@user.InviteStatus</td>
         </tr>
     }
     </tbody>
 </table>
+
+<div class="d-flex justify-content-between align-items-center mt-2">
+    <span id="pagination-info" class="text-muted small"></span>
+    <nav>
+        <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
+    </nav>
+</div>
 
 @section Scripts {
     <script src="~/js/invitations.js" asp-append-version="true"></script>

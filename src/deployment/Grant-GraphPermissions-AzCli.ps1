@@ -37,7 +37,6 @@ Write-Host "  Graph SP id: $graphSpId"
 $requiredRoles = @(
     "User.Invite.All",
     "User.Read.All",
-    "AppRoleAssignment.ReadWrite.All",
     "Directory.Read.All"
 )
 

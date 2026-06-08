@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.ODataErrors;
 using PocLandingPage.Web.Models;
 using PocLandingPage.Web.Options;
 
@@ -12,36 +11,29 @@ public class InvitationService : IInvitationService
     private readonly GraphServiceClient _graph;
     private readonly string _spId;
     private readonly string _redirectUrl;
-    private readonly ILogger<InvitationService> _logger;
 
     public InvitationService(
         GraphServiceClient graph,
         IOptions<AzureAdOptions> ad,
-        IConfiguration config,
-        ILogger<InvitationService> logger)
+        IConfiguration config)
     {
         _graph = graph;
         _spId = ad.Value.ServicePrincipalId;
         _redirectUrl = config["App:BaseUrl"] ?? "https://localhost";
-        _logger = logger;
     }
 
     public async Task<IReadOnlyList<GuestUser>> GetGuestsAsync(CancellationToken ct = default)
     {
-        var users = await _graph.Users.GetAsync(req =>
-        {
-            req.QueryParameters.Filter = "userType eq 'Guest'";
-            req.QueryParameters.Select = new[] { "id", "displayName", "mail", "userPrincipalName", "externalUserState" };
-        }, ct);
+        var assignmentsTask = _graph.ServicePrincipals[_spId].AppRoleAssignedTo.GetAsync(cancellationToken: ct);
+        var spTask = _graph.ServicePrincipals[_spId].GetAsync(cancellationToken: ct);
+        await Task.WhenAll(assignmentsTask, spTask);
 
-        var assignments = await _graph.ServicePrincipals[_spId].AppRoleAssignedTo.GetAsync(cancellationToken: ct);
-        var sp = await _graph.ServicePrincipals[_spId].GetAsync(cancellationToken: ct);
+        var sp = await spTask;
         var roleMap = sp?.AppRoles?.ToDictionary(r => r.Id!.Value, r => r.Value!) ?? new();
 
-        // A user can have several assignments (incl. the all-zeros "default access"
-        // role, which Graph adds automatically and is NOT in roleMap). Pick the first
-        // assignment that maps to a real POC role so default-access entries don't mask it.
-        var assignmentLookup = (assignments?.Value ?? new List<AppRoleAssignment>())
+        // Pick the first assignment that maps to a real POC role; fall back to whatever
+        // assignment exists (e.g. the all-zeros "default access" role Graph adds automatically).
+        var assignmentLookup = ((await assignmentsTask)?.Value ?? new List<AppRoleAssignment>())
             .Where(a => a.PrincipalId is not null)
             .GroupBy(a => a.PrincipalId!.Value)
             .ToDictionary(
@@ -49,11 +41,19 @@ public class InvitationService : IInvitationService
                 g => g.FirstOrDefault(a => a.AppRoleId is { } id && roleMap.ContainsKey(id))
                      ?? g.First());
 
-        // All principal IDs that have any assignment on this enterprise app.
-        var assignedPrincipalIds = assignmentLookup.Keys.ToHashSet();
+        if (assignmentLookup.Count == 0)
+            return Array.Empty<GuestUser>();
+
+        // Bulk-fetch profiles for all assigned principals (members + guests).
+        var oidFilter = string.Join(" or ", assignmentLookup.Keys.Select(id => $"id eq '{id}'"));
+        var users = await _graph.Users.GetAsync(req =>
+        {
+            req.QueryParameters.Filter = oidFilter;
+            req.QueryParameters.Select = new[] { "id", "displayName", "mail", "userPrincipalName", "externalUserState", "userType" };
+        }, ct);
 
         return (users?.Value ?? new List<User>())
-            .Where(u => u.Id is not null && Guid.TryParse(u.Id, out var id) && assignedPrincipalIds.Contains(id))
+            .Where(u => u.Id is not null)
             .Select(u =>
             {
                 string? role = null;
@@ -69,78 +69,50 @@ public class InvitationService : IInvitationService
                 {
                     Id = u.Id!,
                     DisplayName = u.DisplayName ?? "",
-                    Email = u.Mail ?? u.UserPrincipalName ?? "",
+                    Email = ResolveEmail(u),
                     Role = role ?? "Default access",
-                    InviteStatus = u.ExternalUserState
+                    InviteStatus = u.UserType == "Member" ? "Member" : u.ExternalUserState,
+                    IsExternal = u.UserType == "Guest",
                 };
             })
+            .OrderBy(u => u.DisplayName)
             .ToList();
     }
 
-    public async Task InviteUserAsync(string email, string role, CancellationToken ct = default)
+    // B2B guest UPNs look like user_domain.com#EXT#@tenant.onmicrosoft.com when mail is null.
+    // The last underscore before #EXT# represents the @ in the original email address.
+    private static string ResolveEmail(User u)
     {
-        if (!Roles.IsValid(role)) throw new ArgumentException($"Invalid role '{role}'", nameof(role));
+        if (!string.IsNullOrEmpty(u.Mail))
+            return u.Mail;
+        var upn = u.UserPrincipalName ?? "";
+        var ext = upn.IndexOf("#EXT#", StringComparison.OrdinalIgnoreCase);
+        if (ext > 0)
+        {
+            var local = upn[..ext];
+            var lastUnderscore = local.LastIndexOf('_');
+            if (lastUnderscore >= 0)
+                return local[..lastUnderscore] + "@" + local[(lastUnderscore + 1)..];
+        }
+        return upn;
+    }
 
-        // The B2B invitation API is for external guests. An email that already belongs
-        // to a member of this tenant (e.g. an @inholland.nl colleague) cannot be invited —
-        // Graph rejects it. Detect that up front and assign the role to the existing user
-        // directly so admins can grant access to internal users too.
+    public async Task InviteUserAsync(string email, CancellationToken ct = default)
+    {
+        // Internal tenant members cannot be B2B invited — Graph rejects it.
+        // They already have access once added to the enterprise app in the portal.
         var existing = await FindExistingUserAsync(email, ct);
         if (existing is not null)
-        {
-            await AssignRoleWithRetryAsync(existing, role, ct);
-            return;
-        }
+            throw new InvalidOperationException($"{email} is already a member of this tenant. Assign their role directly in the Azure Portal under Enterprise Applications.");
 
-        var invite = await _graph.Invitations.PostAsync(new Invitation
+        await _graph.Invitations.PostAsync(new Invitation
         {
             InvitedUserEmailAddress = email,
             InviteRedirectUrl = _redirectUrl,
             SendInvitationMessage = true,
         }, cancellationToken: ct);
-
-        if (invite?.InvitedUser?.Id is null)
-            throw new InvalidOperationException("Invitation succeeded but invited user id was missing.");
-
-        // A just-created guest object is not yet usable as the principal of an app role
-        // assignment — for a few seconds Graph rejects the link with "Links to
-        // EntitlementGrant are not supported between specified entities" because the new
-        // principal hasn't replicated. Retry with backoff until it succeeds.
-        await AssignRoleWithRetryAsync(invite.InvitedUser.Id, role, ct);
     }
 
-    private async Task AssignRoleWithRetryAsync(string userId, string role, CancellationToken ct)
-    {
-        // Total wait budget ~60s: new guest objects can take longer to replicate in
-        // tenants with stricter B2B policies (e.g. Inholland). The error
-        // "Links to EntitlementGrant are not supported between specified entities"
-        // is transient — keep retrying with backoff until the principal is ready.
-        var delays = new[] { 2, 3, 5, 8, 10, 10, 10, 12 };
-        for (var attempt = 0; ; attempt++)
-        {
-            try
-            {
-                await AssignRoleAsync(userId, role, ct);
-                return;
-            }
-            catch (ODataError ex) when (attempt < delays.Length)
-            {
-                _logger.LogWarning("AssignRole attempt {Attempt} failed — code={Code} message={Message}",
-                    attempt + 1, ex.Error?.Code, ex.Error?.Message);
-                if (!IsPrincipalNotReadyError(ex)) throw;
-                await Task.Delay(TimeSpan.FromSeconds(delays[attempt]), ct);
-            }
-        }
-    }
-
-    // The "EntitlementGrant" link error means the principal isn't resolvable yet — the
-    // only transient condition worth retrying here. Anything else should surface.
-    private static bool IsPrincipalNotReadyError(ODataError ex) =>
-        ex.Error?.Message?.Contains("EntitlementGrant", StringComparison.OrdinalIgnoreCase) == true
-        || ex.Error?.Message?.Contains("does not exist", StringComparison.OrdinalIgnoreCase) == true;
-
-    // Returns the object id of an existing tenant user matching this email
-    // (by mail, userPrincipalName, or proxyAddresses), or null if none exists.
     private async Task<string?> FindExistingUserAsync(string email, CancellationToken ct)
     {
         var escaped = email.Replace("'", "''");
@@ -153,60 +125,5 @@ public class InvitationService : IInvitationService
         }, ct);
 
         return result?.Value?.FirstOrDefault()?.Id;
-    }
-
-    private async Task AssignRoleAsync(string userId, string role, CancellationToken ct)
-    {
-        var roleId = await GetRoleIdAsync(role, ct);
-
-        // Idempotent: a user who already has a role assignment on this app would
-        // otherwise trigger Graph's "Permission being assigned already exists on the
-        // object" error. Clear any existing assignments first so re-inviting (or
-        // re-granting) the same user simply refreshes their role instead of failing.
-        await RevokeAccessAsync(userId, ct);
-
-        await _graph.ServicePrincipals[_spId].AppRoleAssignedTo.PostAsync(new AppRoleAssignment
-        {
-            PrincipalId = Guid.Parse(userId),
-            ResourceId = Guid.Parse(_spId),
-            AppRoleId = roleId,
-        }, cancellationToken: ct);
-    }
-
-    public async Task UpdateRoleAsync(string userId, string newRole, CancellationToken ct = default)
-    {
-        if (!Roles.IsValid(newRole)) throw new ArgumentException($"Invalid role '{newRole}'", nameof(newRole));
-
-        await RevokeAccessAsync(userId, ct);
-
-        var roleId = await GetRoleIdAsync(newRole, ct);
-        await _graph.ServicePrincipals[_spId].AppRoleAssignedTo.PostAsync(new AppRoleAssignment
-        {
-            PrincipalId = Guid.Parse(userId),
-            ResourceId = Guid.Parse(_spId),
-            AppRoleId = roleId,
-        }, cancellationToken: ct);
-    }
-
-    public async Task RevokeAccessAsync(string userId, CancellationToken ct = default)
-    {
-        var assignments = await _graph.ServicePrincipals[_spId].AppRoleAssignedTo.GetAsync(req =>
-        {
-            req.QueryParameters.Filter = $"principalId eq {userId}";
-        }, ct);
-
-        foreach (var a in assignments?.Value ?? new List<AppRoleAssignment>())
-        {
-            if (a.Id is null) continue;
-            await _graph.ServicePrincipals[_spId].AppRoleAssignedTo[a.Id].DeleteAsync(cancellationToken: ct);
-        }
-    }
-
-    private async Task<Guid> GetRoleIdAsync(string roleName, CancellationToken ct)
-    {
-        var sp = await _graph.ServicePrincipals[_spId].GetAsync(cancellationToken: ct);
-        var role = sp?.AppRoles?.FirstOrDefault(r => r.Value == roleName)
-            ?? throw new InvalidOperationException($"App role '{roleName}' not found on service principal {_spId}.");
-        return role.Id!.Value;
     }
 }

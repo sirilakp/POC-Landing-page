@@ -47,6 +47,17 @@ else
 {
     builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
         .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection(AzureAdOptions.SectionName));
+
+    // Stale session cookie + missing role → sign out and re-authenticate so the
+    // new token carries the updated role claims. Avoids the DevTools clear-cookie workaround.
+    builder.Services.ConfigureApplicationCookie(cookieOptions =>
+    {
+        cookieOptions.Events.OnRedirectToAccessDenied = async ctx =>
+        {
+            await ctx.HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            ctx.HttpContext.Response.Redirect("/");
+        };
+    });
 }
 
 builder.Services.AddAuthorization(options =>

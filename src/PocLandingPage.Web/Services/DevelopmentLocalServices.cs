@@ -139,12 +139,6 @@ public class DevelopmentInvitationService : IInvitationService
     public Task<IReadOnlyList<GuestUser>> GetGuestsAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<GuestUser>>(new List<GuestUser>());
 
-    public Task InviteUserAsync(string email, string role, CancellationToken ct = default)
-        => Task.CompletedTask;
-
-    public Task UpdateRoleAsync(string userId, string newRole, CancellationToken ct = default)
-        => Task.CompletedTask;
-
-    public Task RevokeAccessAsync(string userId, CancellationToken ct = default)
+    public Task InviteUserAsync(string email, CancellationToken ct = default)
         => Task.CompletedTask;
 }

@@ -7,4 +7,5 @@ public class GuestUser
     public string Email { get; set; } = "";
     public string? Role { get; set; }
     public string? InviteStatus { get; set; }
+    public bool IsExternal { get; set; }
 }

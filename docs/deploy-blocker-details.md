@@ -34,7 +34,6 @@ Grant the following 4 Microsoft Graph permissions to the Managed Identity listed
 |---|---|---|
 | `User.Invite.All` | Application | `09850681-111b-4a89-9bed-3f2cae46d706` |
 | `User.Read.All` | Application | `df021288-bdef-4463-88db-98f22de89214` |
-| `AppRoleAssignment.ReadWrite.All` | Application | `06b708a9-e830-4db3-a914-8e69da51d44f` |
 | `Directory.Read.All` | Application | `7ab1d382-f21e-4acd-a863-ba3e13f7da61` |
 
 ---

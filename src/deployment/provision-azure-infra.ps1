@@ -280,7 +280,7 @@ if ($LASTEXITCODE -eq 0) {
         -Uri "https://graph.microsoft.com/v1.0/servicePrincipals/$miPrincipalId/appRoleAssignments" `
         -Headers $graphHeaders).value
 
-    foreach ($roleName in @("User.Invite.All", "User.Read.All", "AppRoleAssignment.ReadWrite.All", "Directory.Read.All")) {
+    foreach ($roleName in @("User.Invite.All", "User.Read.All", "Directory.Read.All")) {
         $appRole = $graphSp.appRoles | Where-Object { $_.value -eq $roleName }
         if (-not $appRole) { Write-Warning "  Graph role '$roleName' not found — skipping"; continue }
         $already = $existingAssignments | Where-Object { $_.appRoleId -eq $appRole.id -and $_.resourceId -eq $graphSpId }

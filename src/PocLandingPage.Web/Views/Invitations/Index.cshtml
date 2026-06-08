@@ -46,10 +46,17 @@
             <td>@guest.DisplayName</td>
             <td>@guest.Email</td>
             <td>
-                <select class="form-select form-select-sm role-select">
-                    <option value="POC.Viewer" selected="@(guest.Role == "POC.Viewer")">POC Viewer</option>
-                    <option value="POC.Admin" selected="@(guest.Role == "POC.Admin")">POC Admin</option>
-                </select>
+                @if (guest.Role == "Default access")
+                {
+                    <span class="text-muted small">Default access</span>
+                }
+                else
+                {
+                    <select class="form-select form-select-sm role-select">
+                        <option value="POC.Viewer" selected="@(guest.Role == "POC.Viewer")">POC Viewer</option>
+                        <option value="POC.Admin" selected="@(guest.Role == "POC.Admin")">POC Admin</option>
+                    </select>
+                }
             </td>
             <td>@guest.InviteStatus</td>
             <td class="text-end">

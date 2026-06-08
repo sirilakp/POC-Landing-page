@@ -46,8 +46,11 @@ public class InvitationService : IInvitationService
                 g => g.FirstOrDefault(a => a.AppRoleId is { } id && roleMap.ContainsKey(id))
                      ?? g.First());
 
+        // All principal IDs that have any assignment on this enterprise app.
+        var assignedPrincipalIds = assignmentLookup.Keys.ToHashSet();
+
         return (users?.Value ?? new List<User>())
-            .Where(u => u.Id is not null)
+            .Where(u => u.Id is not null && Guid.TryParse(u.Id, out var id) && assignedPrincipalIds.Contains(id))
             .Select(u =>
             {
                 string? role = null;
@@ -64,13 +67,10 @@ public class InvitationService : IInvitationService
                     Id = u.Id!,
                     DisplayName = u.DisplayName ?? "",
                     Email = u.Mail ?? u.UserPrincipalName ?? "",
-                    Role = role,
+                    Role = role ?? "Default access",
                     InviteStatus = u.ExternalUserState
                 };
             })
-            // Only show guests who actually have a POC role on this app —
-            // hides unrelated tenant guests that were never invited here.
-            .Where(g => g.Role is not null)
             .ToList();
     }
 
@@ -108,9 +108,11 @@ public class InvitationService : IInvitationService
 
     private async Task AssignRoleWithRetryAsync(string userId, string role, CancellationToken ct)
     {
-        // Total wait budget ~15s: enough for directory replication of a new guest,
-        // short enough that the admin isn't left staring at a hung request.
-        var delays = new[] { 1, 2, 3, 4, 5 };
+        // Total wait budget ~60s: new guest objects can take longer to replicate in
+        // tenants with stricter B2B policies (e.g. Inholland). The error
+        // "Links to EntitlementGrant are not supported between specified entities"
+        // is transient — keep retrying with backoff until the principal is ready.
+        var delays = new[] { 2, 3, 5, 8, 10, 10, 10, 12 };
         for (var attempt = 0; ; attempt++)
         {
             try

@@ -10,18 +10,28 @@ public class GraphUserLookup : IGraphUserLookup
 
     public async Task<UserLookup?> FindByEmailAsync(string email, CancellationToken ct = default)
     {
+        // Try direct UPN/ID lookup first (fast path).
         try
         {
             var user = await _graph.Users[email].GetAsync(req =>
             {
                 req.QueryParameters.Select = new[] { "id", "mail", "userPrincipalName", "displayName" };
             }, ct);
-            return user is null ? null : Map(user);
+            if (user is not null) return Map(user);
         }
-        catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 404)
+        catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 404) { }
+
+        // Fall back to $filter on mail + userPrincipalName for users whose UPN differs from their mail address.
+        var escaped = email.Replace("'", "''");
+        var result = await _graph.Users.GetAsync(req =>
         {
-            return null;
-        }
+            req.QueryParameters.Filter = $"mail eq '{escaped}' or userPrincipalName eq '{escaped}'";
+            req.QueryParameters.Select = new[] { "id", "mail", "userPrincipalName", "displayName" };
+            req.QueryParameters.Top = 1;
+        }, ct);
+
+        var found = result?.Value?.FirstOrDefault();
+        return found is null ? null : Map(found);
     }
 
     public async Task<IReadOnlyList<UserLookup>> GetByOidsAsync(IEnumerable<string> oids, CancellationToken ct = default)
